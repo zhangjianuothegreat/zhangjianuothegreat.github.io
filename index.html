@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 修复CSP配置，允许必要内联脚本和事件句柄 -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-hashes' 'unsafe-inline'; 
@@ -86,12 +85,13 @@
         }
         #lucky {
             position: absolute;
-            top: 10%;
+            top: 50%;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform-origin: 0 0; /* 旋转原点设为中心 */
             font-size: 18px;
             color: #d97706;
             font-weight: bold;
+            white-space: nowrap; /* 防止文字换行 */
         }
         #camera {
             width: 90%;
@@ -119,13 +119,14 @@
         }
         #lucky-overlay {
             position: absolute;
-            top: 10%;
+            top: 50%;
             left: 50%;
-            transform: translate(-50%, 0);
+            transform-origin: 0 0; /* 旋转原点设为中心 */
             font-size: 24px;
             color: #d97706;
             font-weight: bold;
             text-shadow: 0 0 3px #000;
+            white-space: nowrap; /* 防止文字换行 */
         }
         #degree {
             font-size: 18px;
@@ -160,7 +161,6 @@
     <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2024">
     <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12">
     <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
-    <!-- 修复：移除onclick，添加id用于绑定事件 -->
     <button id="calculateBtn">Find My Lucky Direction</button>
 
     <div id="results"></div>
@@ -179,7 +179,6 @@
         </div>
     </div>
 
-    <!-- 修复：移除onclick，保留id -->
     <button id="installButton" style="display: none;">Install App</button>
 
     <script>
@@ -234,6 +233,15 @@
                 document.getElementById('lucky').textContent = 'LUCKY';
                 document.getElementById('lucky-overlay').textContent = 'LUCKY';
                 const joyAngle = data.angle || 0;
+                
+                // 计算文字距离中心的偏移量（半径的80%）
+                const compassRadius = 100; // 指南针半径的一半
+                const textOffset = compassRadius * 0.8;
+                const cameraRadius = 150; // 摄像头半径的一半
+                const cameraTextOffset = cameraRadius * 0.8;
+                
+                // 计算初始位置（基于幸运角度）
+                updateTextPosition(joyAngle);
 
                 // 启动指南针
                 if ("DeviceOrientationEvent" in window) {
@@ -263,10 +271,30 @@
                 function updateCompass(event) {
                     const alpha = event.alpha || 0;
                     const adjustedAngle = (360 - alpha + joyAngle) % 360;
+                    
+                    // 更新指针
                     document.getElementById('needle').style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    document.getElementById('lucky').style.transform = `translate(-50%, 0) rotate(${joyAngle}deg)`;
-                    document.getElementById('lucky-overlay').style.transform = `translate(-50%, 0) rotate(${joyAngle}deg)`;
+                    
+                    // 更新LUCKY文字位置（随手机旋转而移动）
+                    updateTextPosition(joyAngle - alpha);
+                    
                     document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
+                }
+                
+                // 更新文字位置函数
+                function updateTextPosition(angle) {
+                    // 将角度转换为弧度
+                    const radians = angle * (Math.PI / 180);
+                    
+                    // 计算指南针上LUCKY文字的位置
+                    const luckyX = textOffset * Math.cos(radians);
+                    const luckyY = -textOffset * Math.sin(radians); // 负号因为Y轴向下为正
+                    document.getElementById('lucky').style.transform = `translate(-50%, -50%) translate(${luckyX}px, ${luckyY}px) rotate(${angle}deg)`;
+                    
+                    // 计算摄像头上LUCKY文字的位置
+                    const overlayX = cameraTextOffset * Math.cos(radians);
+                    const overlayY = -cameraTextOffset * Math.sin(radians);
+                    document.getElementById('lucky-overlay').style.transform = `translate(-50%, -50%) translate(${overlayX}px, ${overlayY}px) rotate(${angle}deg)`;
                 }
 
                 // 启动摄像头（适配手机）
@@ -346,15 +374,13 @@
             }
         }
 
-        // 修复：页面加载后绑定按钮事件（替代原onclick）
+        // 页面加载后绑定按钮事件
         document.addEventListener('DOMContentLoaded', function() {
-            // 绑定"测算"按钮点击事件
             const calculateBtn = document.getElementById('calculateBtn');
             if (calculateBtn) {
                 calculateBtn.addEventListener('click', calculateBazi);
             }
 
-            // 绑定"安装"按钮点击事件
             const installBtn = document.getElementById('installButton');
             if (installBtn) {
                 installBtn.addEventListener('click', installApp);
