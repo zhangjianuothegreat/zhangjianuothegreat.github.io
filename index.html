@@ -75,23 +75,23 @@
             background-color: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        #needle {
+        .compass-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .needle {
             font-size: 30px;
             color: red;
+            line-height: 1;
         }
-        #lucky {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-origin: 0 0; /* 旋转原点设为中心 */
+        .lucky-text {
             font-size: 18px;
             color: #d97706;
             font-weight: bold;
-            white-space: nowrap; /* 防止文字换行 */
+            margin-top: 5px;
         }
         #camera {
             width: 90%;
@@ -117,16 +117,24 @@
             height: 100%;
             pointer-events: none;
         }
-        #lucky-overlay {
+        .camera-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform-origin: 0 0; /* 旋转原点设为中心 */
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .camera-needle {
+            font-size: 40px;
+            color: red;
+            line-height: 1;
+        }
+        .camera-lucky-text {
             font-size: 24px;
             color: #d97706;
             font-weight: bold;
             text-shadow: 0 0 3px #000;
-            white-space: nowrap; /* 防止文字换行 */
+            margin-top: 5px;
         }
         #degree {
             font-size: 18px;
@@ -166,8 +174,11 @@
     <div id="results"></div>
 
     <div id="compass">
-        <div id="needle">↑</div>
-        <div id="lucky"></div>
+        <!-- 指南针箭头和LUCKY文字容器 -->
+        <div class="compass-needle-container">
+            <div class="needle">↑</div>
+            <div class="lucky-text">LUCKY</div>
+        </div>
     </div>
 
     <div id="degree"></div>
@@ -175,7 +186,11 @@
     <div id="camera">
         <video id="video" autoplay playsinline></video>
         <div id="overlay">
-            <div id="lucky-overlay"></div>
+            <!-- 摄像头箭头和LUCKY文字容器 -->
+            <div class="camera-needle-container">
+                <div class="camera-needle">↑</div>
+                <div class="camera-lucky-text">LUCKY</div>
+            </div>
         </div>
     </div>
 
@@ -229,20 +244,8 @@
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
 
-                // 设置指南针和摄像头叠加
-                document.getElementById('lucky').textContent = 'LUCKY';
-                document.getElementById('lucky-overlay').textContent = 'LUCKY';
                 const joyAngle = data.angle || 0;
                 
-                // 计算文字距离中心的偏移量（半径的80%）
-                const compassRadius = 100; // 指南针半径的一半
-                const textOffset = compassRadius * 0.8;
-                const cameraRadius = 150; // 摄像头半径的一半
-                const cameraTextOffset = cameraRadius * 0.8;
-                
-                // 计算初始位置（基于幸运角度）
-                updateTextPosition(joyAngle);
-
                 // 启动指南针
                 if ("DeviceOrientationEvent" in window) {
                     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -270,34 +273,21 @@
                 // 指南针更新函数
                 function updateCompass(event) {
                     const alpha = event.alpha || 0;
+                    // 计算调整后的角度，使箭头始终指向幸运方向
                     const adjustedAngle = (360 - alpha + joyAngle) % 360;
                     
-                    // 更新指针
-                    document.getElementById('needle').style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    // 更新指南针箭头和LUCKY文字（作为一个整体旋转）
+                    document.querySelector('.compass-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     
-                    // 更新LUCKY文字位置（随手机旋转而移动）
-                    updateTextPosition(joyAngle - alpha);
+                    // 更新摄像头箭头和LUCKY文字（作为一个整体旋转）
+                    document.querySelector('.camera-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     
                     document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
                 }
-                
-                // 更新文字位置函数
-                function updateTextPosition(angle) {
-                    // 将角度转换为弧度
-                    const radians = angle * (Math.PI / 180);
-                    
-                    // 计算指南针上LUCKY文字的位置
-                    const luckyX = textOffset * Math.cos(radians);
-                    const luckyY = -textOffset * Math.sin(radians); // 负号因为Y轴向下为正
-                    document.getElementById('lucky').style.transform = `translate(-50%, -50%) translate(${luckyX}px, ${luckyY}px) rotate(${angle}deg)`;
-                    
-                    // 计算摄像头上LUCKY文字的位置
-                    const overlayX = cameraTextOffset * Math.cos(radians);
-                    const overlayY = -cameraTextOffset * Math.sin(radians);
-                    document.getElementById('lucky-overlay').style.transform = `translate(-50%, -50%) translate(${overlayX}px, ${overlayY}px) rotate(${angle}deg)`;
-                }
 
-                // 启动摄像头（适配手机）
+                // 启动摄像头
                 startCamera();
 
             } catch (error) {
@@ -306,17 +296,17 @@
             }
         }
 
-        // 摄像头启动函数（单独提取便于复用）
+        // 摄像头启动函数
         async function startCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 document.getElementById('results').innerHTML += `<p>Camera not supported on this device.</p>`;
                 return;
             }
 
-            // 手机摄像头配置：优先后置摄像头，调整分辨率
+            // 手机摄像头配置：优先后置摄像头
             const constraints = {
                 video: {
-                    facingMode: { ideal: 'environment' }, // 优先后置摄像头
+                    facingMode: { ideal: 'environment' },
                     width: { ideal: 480 },
                     height: { ideal: 640 },
                     frameRate: { ideal: 30 }
