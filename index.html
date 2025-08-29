@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; connect-src https://lucky-compass-backend.fly.dev; img-src 'self' data:; media-src 'self' blob:; style-src 'self' 'unsafe-inline';">
+    <!-- 修复CSP配置，允许必要内联脚本和事件句柄 -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-hashes' 'unsafe-inline'; 
+        script-src-attr 'self' 'unsafe-hashes' 'unsafe-inline'; 
+        connect-src https://lucky-compass-backend.fly.dev https://*.fly.dev; 
+        img-src 'self' data:; 
+        media-src 'self' blob: https://zhangjianuothegreat.github.io https://yourluckycompass.com; 
+        style-src 'self' 'unsafe-inline';
+        worker-src 'self' blob:;
+        frame-src 'self' blob:;
+    ">
     <meta name="theme-color" content="#1e3a8a">
     <title>Lucky Direction Compass</title>
     <link rel="manifest" href="manifest.json">
@@ -149,7 +160,8 @@
     <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2024">
     <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12">
     <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
-    <button onclick="calculateBazi()">Find My Lucky Direction</button>
+    <!-- 修复：移除onclick，添加id用于绑定事件 -->
+    <button id="calculateBtn">Find My Lucky Direction</button>
 
     <div id="results"></div>
 
@@ -167,7 +179,8 @@
         </div>
     </div>
 
-    <button id="installButton" style="display: none;" onclick="installApp()">Install App</button>
+    <!-- 修复：移除onclick，保留id -->
+    <button id="installButton" style="display: none;">Install App</button>
 
     <script>
         // 页面加载时检查是否为HTTPS，如果不是则跳转
@@ -332,6 +345,21 @@
                 });
             }
         }
+
+        // 修复：页面加载后绑定按钮事件（替代原onclick）
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定"测算"按钮点击事件
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (calculateBtn) {
+                calculateBtn.addEventListener('click', calculateBazi);
+            }
+
+            // 绑定"安装"按钮点击事件
+            const installBtn = document.getElementById('installButton');
+            if (installBtn) {
+                installBtn.addEventListener('click', installApp);
+            }
+        });
     </script>
 </body>
 </html>
