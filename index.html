@@ -158,6 +158,17 @@
             font-weight: bold;
             margin: 10px 0;
         }
+        /* 新增：权限申请提示框样式 */
+        #permissionNotice {
+            margin: 15px auto;
+            padding: 12px;
+            max-width: 300px;
+            background-color: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            color: #92400e;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -171,10 +182,14 @@
     <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
     <button id="calculateBtn">Find My Lucky Direction</button>
 
+    <!-- 新增：iOS 权限申请提示（初始隐藏，点击按钮后显示） -->
+    <div id="permissionNotice" style="display: none;">
+        请允许浏览器访问设备方向（指南针）和摄像头权限，以正常使用功能
+    </div>
+
     <div id="results"></div>
 
     <div id="compass">
-        <!-- 指南针箭头和LUCKY文字容器 -->
         <div class="compass-needle-container">
             <div class="needle">↑</div>
             <div class="lucky-text">LUCKY</div>
@@ -186,7 +201,6 @@
     <div id="camera">
         <video id="video" autoplay playsinline></video>
         <div id="overlay">
-            <!-- 摄像头箭头和LUCKY文字容器 -->
             <div class="camera-needle-container">
                 <div class="camera-needle">↑</div>
                 <div class="camera-lucky-text">LUCKY</div>
@@ -202,17 +216,19 @@
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
 
+        // 全局变量：存储指南针事件监听器（用于后续移除，避免重复绑定）
+        let compassEventListener = null;
+
         async function calculateBazi() {
             const year = parseInt(document.getElementById('year').value);
             const month = parseInt(document.getElementById('month').value);
             const day = parseInt(document.getElementById('day').value);
 
-            // 输入验证
+            // 1. 输入验证
             if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
                 alert("Please enter a valid birth date (Year: 1900-2024, Month: 1-12, Day: 1-31).");
                 return;
             }
-
             try {
                 const testDate = new Date(year, month - 1, day);
                 if (testDate.getFullYear() !== year || testDate.getMonth() + 1 !== month || testDate.getDate() !== day) {
@@ -224,17 +240,16 @@
             }
 
             try {
-                // 调用后端API
+                // 2. 调用后端API获取幸运方向数据
                 const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
-
                 if (data.error) {
                     alert(`Calculation failed: ${data.error}`);
                     return;
                 }
 
-                // 显示结果
+                // 3. 显示测算结果
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
@@ -243,52 +258,19 @@
                     <p><b>Insight:</b> ${data.explanation}</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
+                // 显示权限提示（针对iOS用户）
+                document.getElementById('permissionNotice').style.display = 'block';
 
                 const joyAngle = data.angle || 0;
-                
-                // 启动指南针
-                if ("DeviceOrientationEvent" in window) {
-                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                        // iOS设备需要单独请求权限
-                        try {
-                            const permissionState = await DeviceOrientationEvent.requestPermission();
-                            if (permissionState === 'granted') {
-                                window.addEventListener("deviceorientation", updateCompass);
-                                document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
-                            } else {
-                                document.getElementById('results').innerHTML += `<p class="permission-prompt">Compass permission denied. Please enable it in your browser settings.</p>`;
-                            }
-                        } catch (err) {
-                            document.getElementById('results').innerHTML += `<p>Compass error: ${err.message}</p>`;
-                        }
-                    } else {
-                        // 安卓设备直接使用
-                        window.addEventListener("deviceorientation", updateCompass);
-                        document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
-                    }
-                } else {
-                    document.getElementById('results').innerHTML += `<p>Compass not supported on this device. Use a phone with a compass sensor.</p>`;
+                // 移除旧的指南针监听器（避免重复绑定导致指针乱跳）
+                if (compassEventListener) {
+                    window.removeEventListener("deviceorientation", compassEventListener);
                 }
 
-                // 指南针更新函数
-                function updateCompass(event) {
-                    const alpha = event.alpha || 0;
-                    // 计算调整后的角度，使箭头始终指向幸运方向
-                    const adjustedAngle = (360 - alpha + joyAngle) % 360;
-                    
-                    // 更新指南针箭头和LUCKY文字（作为一个整体旋转）
-                    document.querySelector('.compass-needle-container').style.transform = 
-                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    
-                    // 更新摄像头箭头和LUCKY文字（作为一个整体旋转）
-                    document.querySelector('.camera-needle-container').style.transform = 
-                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    
-                    document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
-                }
-
-                // 启动摄像头
-                startCamera();
+                // 4. 初始化指南针（核心修复：确保iOS权限通过用户点击触发）
+                await initCompass(joyAngle);
+                // 5. 初始化摄像头
+                await startCamera();
 
             } catch (error) {
                 console.error('Calculation error:', error);
@@ -296,17 +278,62 @@
             }
         }
 
-        // 摄像头启动函数
+        // 新增：独立的指南针初始化函数（确保权限申请在用户点击链路上）
+        async function initCompass(joyAngle) {
+            if (!("DeviceOrientationEvent" in window)) {
+                document.getElementById('results').innerHTML += `<p>Compass not supported on this device. Use a phone with a compass sensor.</p>`;
+                return;
+            }
+
+            try {
+                // iOS Safari 特殊处理：显式请求权限（必须在用户点击触发的函数内）
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    try {
+                        // 关键：此请求必须在用户点击触发的函数内（calculateBazi -> initCompass）
+                        const permissionState = await DeviceOrientationEvent.requestPermission();
+                        if (permissionState !== 'granted') {
+                            document.getElementById('results').innerHTML += `<p class="permission-prompt">Compass permission denied. Go to iPhone Settings → Safari → Privacy & Security → Enable "Motion & Orientation Access" for this site.</p>`;
+                            return;
+                        }
+                    } catch (err) {
+                        // 捕获iOS权限请求错误（如用户未点击允许/拒绝）
+                        document.getElementById('results').innerHTML += `<p class="permission-prompt">Compass error: Please tap "Allow" when the browser asks for orientation access.</p>`;
+                        console.error('iOS Compass Permission Error:', err);
+                        return;
+                    }
+                }
+
+                // 绑定新的指南针监听器
+                compassEventListener = function updateCompass(event) {
+                    const alpha = event.alpha || 0;
+                    const adjustedAngle = (360 - alpha + joyAngle) % 360;
+                    // 更新指南针箭头和LUCKY文字（整体旋转）
+                    document.querySelector('.compass-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    // 更新摄像头箭头和LUCKY文字（整体旋转）
+                    document.querySelector('.camera-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
+                };
+                window.addEventListener("deviceorientation", compassEventListener);
+                document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
+
+            } catch (error) {
+                document.getElementById('results').innerHTML += `<p>Compass init error: ${error.message}</p>`;
+                console.error('Compass Init Failed:', error);
+            }
+        }
+
+        // 摄像头启动函数（保留原有逻辑，优化错误提示）
         async function startCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 document.getElementById('results').innerHTML += `<p>Camera not supported on this device.</p>`;
                 return;
             }
 
-            // 手机摄像头配置：优先后置摄像头
             const constraints = {
                 video: {
-                    facingMode: { ideal: 'environment' },
+                    facingMode: { ideal: 'environment' }, // 优先后置摄像头
                     width: { ideal: 480 },
                     height: { ideal: 640 },
                     frameRate: { ideal: 30 }
@@ -327,13 +354,13 @@
                 let errorMsg = '';
                 switch(err.name) {
                     case 'NotAllowedError':
-                        errorMsg = 'Camera permission denied. Please enable camera access in your browser settings.';
+                        errorMsg = 'Camera permission denied. Go to iPhone Settings → Safari → Privacy & Security → Enable "Camera Access" for this site.';
                         break;
                     case 'NotFoundError':
                         errorMsg = 'No camera found on this device.';
                         break;
                     case 'NotSupportedError':
-                        errorMsg = 'Camera access is not supported in this browser.';
+                        errorMsg = 'Camera access is not supported in this browser. Use Safari or Chrome.';
                         break;
                     default:
                         errorMsg = `Camera error: ${err.message}`;
@@ -343,7 +370,7 @@
             }
         }
 
-        // PWA 安装功能
+        // PWA 安装功能（保留原有逻辑）
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -364,7 +391,7 @@
             }
         }
 
-        // 页面加载后绑定按钮事件
+        // 页面加载后绑定按钮事件（保留原有逻辑）
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculateBtn');
             if (calculateBtn) {
@@ -372,10 +399,4 @@
             }
 
             const installBtn = document.getElementById('installButton');
-            if (installBtn) {
-                installBtn.addEventListener('click', installApp);
-            }
-        });
-    </script>
-</body>
-</html>
+            if (install
