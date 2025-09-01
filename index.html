@@ -391,7 +391,7 @@
             }
         }
 
-        // 页面加载后绑定按钮事件（保留原有逻辑）
+        // 页面加载后绑定按钮事件（修复了代码不完整问题）
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculateBtn');
             if (calculateBtn) {
@@ -399,4 +399,10 @@
             }
 
             const installBtn = document.getElementById('installButton');
-            if (install
+            if (installBtn) {
+                installBtn.addEventListener('click', installApp);
+            }
+        });
+    </script>
+</body>
+</html>
