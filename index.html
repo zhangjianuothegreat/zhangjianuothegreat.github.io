@@ -81,6 +81,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            /* 添加平滑过渡效果 */
+            transition: transform 0.3s ease-out;
         }
         .needle {
             font-size: 30px;
@@ -123,6 +125,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            /* 添加平滑过渡效果 */
+            transition: transform 0.3s ease-out;
         }
         .camera-needle {
             font-size: 40px;
@@ -230,6 +234,8 @@
         // 全局变量：存储指南针事件监听器（用于后续移除，避免重复绑定）
         let compassEventListener = null;
         let currentJoyAngle = 0;
+        // 存储上一次的角度，用于平滑过渡计算
+        let lastAdjustedAngle = 0;
 
         async function calculateBazi() {
             const year = parseInt(document.getElementById('year').value);
@@ -320,7 +326,19 @@
                 // 绑定指南针监听器
                 compassEventListener = function updateCompass(event) {
                     const alpha = event.alpha || 0;
-                    const adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
+                    let adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
+                    
+                    // 计算最短旋转路径（避免超过180度的翻转）
+                    const angleDiff = adjustedAngle - lastAdjustedAngle;
+                    if (angleDiff > 180) {
+                        adjustedAngle -= 360;
+                    } else if (angleDiff < -180) {
+                        adjustedAngle += 360;
+                    }
+                    
+                    // 更新最后角度
+                    lastAdjustedAngle = adjustedAngle;
+                    
                     // 更新指南针箭头和LUCKY文字
                     document.querySelector('.compass-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
