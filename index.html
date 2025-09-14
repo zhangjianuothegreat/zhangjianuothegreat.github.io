@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Find your lucky direction based on your birth date with our free Chinese astrology compass tool.">
+    <meta name="description" content="Discover your lucky direction with our exclusive Chinese astrology compass, blending your birth date, Five Elements, and real-time geographic positioning for cosmic success.">
     <meta name="keywords" content="lucky direction, Chinese astrology compass, Bazi direction, personal luck">
     <meta name="theme-color" content="#1e3a8a">
     <meta http-equiv="Content-Security-Policy" content="
@@ -39,11 +39,11 @@
     <div class="container mx-auto p-4 max-w-4xl">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-blue-800">Find Your Lucky Direction</h1>
-            <p class="mt-2 text-lg">Discover the direction that boosts your luck based on your birth date!</p>
+            <p class="mt-2 text-lg">Discover the direction that boosts your luck based on your birth date and real-time geographic positioning!</p>
         </header>
 
         <section class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <p class="mb-4">Ancient Chinese wisdom ties your birth date to a unique direction that enhances your fortune. Enter your details below to see your lucky direction in real-time!</p>
+            <p class="mb-4">Unlock the secrets of your destiny with our exclusive Lucky Compass! Rooted in 3,000 years of Chinese astrology, our cutting-edge algorithm blends your birth date, Five Elements balance, and real-time geographic positioning with the ancient art of Wu Xing (Five Phases) to reveal your personal lucky direction. Watch the compass dynamically align with the cosmos, guiding you to success and harmony—way beyond any ordinary app!</p>
             <div class="space-y-4">
                 <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2024" class="w-full max-w-xs p-2 border rounded-md">
                 <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" class="w-full max-w-xs p-2 border rounded-md">
@@ -199,12 +199,13 @@
                 // 显示测算结果
                 document.getElementById('results').innerHTML = `
                     <div id="errorContainer"></div>
-                    <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
-                    <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
-                    <p><b>Core Element:</b> ${data.element}</p>
-                    <p><b>Lucky Direction:</b> ${data.joy_direction}</p>
-                    <p><b>Insight:</b> ${data.explanation}</p>
-                    <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
+                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date}</p>
+                    <p><b>Your Destiny Blueprint (BaZi):</b> ${data.bazi}</p>
+                    <p><b>Your Core Element:</b> ${data.element}</p>
+                    <p><b>Your Lucky Direction:</b> ${data.joy_direction} (${data.angle}°)</p>
+                    <p><b>Cosmic Insight:</b> ${data.explanation}</p>
+                    <p class="mindfulness">Your lucky direction is no ordinary compass point—it’s a cosmic key! Powered by Wu Xing’s interplay of Wood, Fire, Earth, Metal, and Water, plus your unique birth chart and real-time location, this direction channels the universe’s energy to boost your luck. Face ${data.joy_direction}, sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a>, and feel the cosmic flow spark success and serenity!</p>
+					<p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with your location, keeping your luck on point!</p>
                 `;
                 // 显示权限提示
                 document.getElementById('permissionNotice').style.display = 'block';
