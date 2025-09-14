@@ -1,0 +1,138 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #F8F9FA; /* Light gray-white */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #4A90E2; /* Soft blue */
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+nav {
+    background-color: #50C878; /* Mint green */
+    padding: 10px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+section {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+button, input[type="submit"] {
+    background-color: #FFD700; /* Golden yellow */
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #FFC300;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #4A90E2;
+    color: white;
+}
+
+footer {
+    background-color: #4A90E2;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    nav a {
+        display: block;
+        margin: 10px 0;
+    }
+    table {
+        font-size: 14px;
+    }
+    section {
+        padding: 10px;
+    }
+}
+
+/* Animations for engagement */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+section {
+    animation: fadeIn 1s ease-in;
+}
+
+/* Compass specific (for zhinanzhenindex.html) */
+.compass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background-color: #50C878;
+    border-radius: 50%;
+    margin: 20px auto;
+    width: 200px;
+}
+
+/* Blog specific */
+.blog-article {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.blog-article h3 {
+    color: #4A90E2;
+}
+
+/* Ad placeholder */
+.ad {
+    margin: 20px auto;
+    text-align: center;
+    background: #eee;
+    padding: 10px;
+    border: 1px dashed #ccc;
+}
