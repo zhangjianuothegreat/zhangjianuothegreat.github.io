@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Find your lucky direction based on your birth date with our free Chinese astrology compass tool.">
+    <meta name="keywords" content="lucky direction, Chinese astrology compass, Bazi direction, personal luck">
+    <meta name="theme-color" content="#1e3a8a">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-hashes' 'unsafe-inline'; 
@@ -14,223 +17,106 @@
         worker-src 'self' blob:;
         frame-src 'self' blob:;
     ">
-    <meta name="theme-color" content="#1e3a8a">
-    <title>Lucky Direction Compass</title>
+    <title>Find Your Lucky Direction - Your Lucky Compass</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
-    <style>
-        body {
-            background-color: #f3f4f6;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            color: #333;
-            margin: 0;
-        }
-        h1 {
-            color: #1e3a8a;
-            font-size: 24px;
-            margin-bottom: 30px;
-        }
-        input {
-            margin: 10px auto;
-            padding: 12px;
-            width: 80%;
-            max-width: 300px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            display: block;
-        }
-        button {
-            padding: 12px 24px;
-            background-color: #1e3a8a;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 20px auto;
-            border-radius: 6px;
-            display: block;
-        }
-        button:hover {
-            background-color: #1e40af;
-        }
-        #results {
-            text-align: left;
-            max-width: 300px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        #compass {
-            margin: 20px auto;
-            width: 200px;
-            height: 200px;
-            border: 2px solid #1e3a8a;
-            border-radius: 50%;
-            position: relative;
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .compass-needle-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            transition: transform 0.3s ease-out;
-        }
-        .needle {
-            font-size: 30px;
-            color: red;
-            line-height: 1;
-        }
-        .lucky-text {
-            font-size: 18px;
-            color: #d97706;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        #camera {
-            width: 90%;
-            max-width: 300px;
-            height: 300px;
-            border: 2px solid #1e3a8a;
-            border-radius: 50%;
-            overflow: hidden;
-            position: relative;
-            margin: 20px auto;
-            background-color: #000;
-        }
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        .camera-needle-container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            transition: transform 0.3s ease-out;
-        }
-        .camera-needle {
-            font-size: 40px;
-            color: red;
-            line-height: 1;
-        }
-        .camera-lucky-text {
-            font-size: 24px;
-            color: #d97706;
-            font-weight: bold;
-            text-shadow: 0 0 3px #000;
-            margin-top: 5px;
-        }
-        #degree {
-            font-size: 18px;
-            color: #1e3a8a;
-            margin: 10px;
-        }
-        #directionTitle {
-            font-size: 16px;
-            color: #1e3a8a;
-            margin: 5px 0;
-            font-weight: 500;
-        }
-        .disclaimer {
-            font-size: 12px;
-            color: #666;
-            max-width: 300px;
-            margin: 10px auto;
-        }
-        .mindfulness {
-            font-size: 14px;
-            color: #4b5563;
-            max-width: 300px;
-            margin: 10px auto;
-        }
-        .permission-prompt {
-            color: #dc2626;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        #permissionNotice {
-            margin: 15px auto;
-            padding: 12px;
-            max-width: 300px;
-            background-color: #fffbeb;
-            border: 1px solid #fbbf24;
-            border-radius: 6px;
-            color: #92400e;
-            font-size: 14px;
-        }
-        #permissionButton {
-            background-color: #f59e0b;
-            margin: 10px auto;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        #permissionButton:hover {
-            background-color: #d97706;
-        }
-        #errorContainer {
-            margin-top: 10px;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Unified CSS -->
 </head>
-<body>
-    <h1>Lucky Direction Compass</h1>
-    <p class="disclaimer">
-        This app is for entertainment purposes only. Results are not guaranteed. Your birth date is not stored.
-    </p>
-    <p>Enter your birth date to find your lucky direction.</p>
-    <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2024">
-    <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12">
-    <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
-    <button id="calculateBtn">Find My Lucky Direction</button>
-
-    <div id="permissionNotice" style="display: none;">
-        To use all features, please allow access to your device's orientation (compass) and camera.
-        <button id="permissionButton">Allow Permissions</button>
-    </div>
-
-    <div id="results">
-        <div id="errorContainer"></div>
-    </div>
-
-    <div id="directionTitle">Current Direction / Lucky Direction</div>
-    <div id="degree">0° / --°</div>
-
-    <div id="compass">
-        <div class="compass-needle-container">
-            <div class="needle">↑</div>
-            <div class="lucky-text">LUCKY</div>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md p-4">
+        <div class="container mx-auto flex justify-center space-x-4">
+            <a href="https://www.yourluckycompass.com/" class="text-blue-600 hover:text-blue-700">Home</a>
+            <a href="https://www.yourluckycompass.com/bazi" class="text-blue-600 hover:text-blue-700">Bazi Reading</a>
+            <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:text-blue-700">Lucky City Match</a>
+            <a href="https://www.yourluckycompass.com/lucky_compass" class="text-blue-600 hover:text-blue-700 font-bold">Lucky Compass</a>
+            <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:text-blue-700">Sound Bath</a>
         </div>
-    </div>
+    </nav>
 
-    <div id="camera">
-        <video id="video" autoplay playsinline></video>
-        <div id="overlay">
-            <div class="camera-needle-container">
-                <div class="camera-needle">↑</div>
-                <div class="camera-lucky-text">LUCKY</div>
+    <div class="container mx-auto p-4 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-800">Find Your Lucky Direction</h1>
+            <p class="mt-2 text-lg">Discover the direction that boosts your luck based on your birth date!</p>
+        </header>
+
+        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <p class="mb-4">Ancient Chinese wisdom ties your birth date to a unique direction that enhances your fortune. Enter your details below to see your lucky direction in real-time!</p>
+            <div class="space-y-4">
+                <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2024" class="w-full max-w-xs p-2 border rounded-md">
+                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" class="w-full max-w-xs p-2 border rounded-md">
+                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" class="w-full max-w-xs p-2 border rounded-md">
+                <button id="calculateBtn" class="w-full max-w-xs bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Find My Lucky Direction</button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <button id="installButton" style="display: none;">Install App</button>
+        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <div id="permissionNotice" class="hidden bg-yellow-50 p-4 rounded-md border border-yellow-400 text-yellow-800">
+                To use all features, please allow access to your device's orientation (compass) and camera.
+                <button id="permissionButton" class="mt-2 bg-yellow-500 text-white p-2 rounded-md hover:bg-yellow-600">Allow Permissions</button>
+            </div>
+
+            <div id="results" class="text-left max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
+                <div id="errorContainer"></div>
+            </div>
+
+            <div id="directionTitle" class="text-blue-800 font-medium mt-4">Current Direction / Lucky Direction</div>
+            <div id="degree" class="text-blue-800 text-lg mt-2">0° / --°</div>
+
+            <div id="compass" class="mx-auto w-48 h-48 border-2 border-blue-800 rounded-full relative bg-white shadow-md mt-4">
+                <div class="compass-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
+                    <div class="needle text-red-600 text-2xl">↑</div>
+                    <div class="lucky-text text-yellow-600 font-bold text-base mt-1">LUCKY</div>
+                </div>
+            </div>
+
+            <div id="camera" class="mx-auto w-64 h-64 border-2 border-blue-800 rounded-full overflow-hidden relative bg-black mt-4">
+                <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div id="overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                    <div class="camera-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
+                        <div class="camera-needle text-red-600 text-3xl">↑</div>
+                        <div class="camera-lucky-text text-yellow-600 font-bold text-lg mt-1 text-shadow">LUCKY</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Section: Discover More Luck -->
+        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-blue-800">Discover More Luck</h2>
+            <p class="mb-4">Your lucky direction is just the start! Explore these tools to enhance your fortune and well-being.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <h3 class="text-lg font-medium mb-2 text-blue-800">Get Your Bazi Reading</h3>
+                    <p class="text-sm text-gray-600 mb-2">Uncover your Five Elements balance and personality insights.</p>
+                    <a href="https://www.yourluckycompass.com/bazi" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Try Bazi Reading</a>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <h3 class="text-lg font-medium mb-2 text-blue-800">Find Your Lucky City</h3>
+                    <p class="text-sm text-gray-600 mb-2">Match your elements to cities that boost your luck.</p>
+                    <a href="https://www.yourluckycompass.com/lucky_city" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Try Lucky City Match</a>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <h3 class="text-lg font-medium mb-2 text-blue-800">Relax with Sound Bath</h3>
+                    <p class="text-sm text-gray-600 mb-2">Balance your energy with soothing sound meditations.</p>
+                    <a href="https://www.yourluckycompass.com/sound_bath" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Start Sound Bath</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ad Placeholder -->
+        <div id="ad-placeholder" class="ad text-center text-gray-500 my-4">
+            <!-- PropellerAds or AdMaven code goes here later. For now, it's empty. -->
+            Ad Space - Coming Soon!
+        </div>
+
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <button id="installButton" class="hidden bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 mb-4">Install App</button>
+            <p>Based on ancient Chinese wisdom | For entertainment only</p>
+            <p>© 2025 Your Lucky Compass</p>
+        </footer>
+    </div>
 
     <script>
         // 页面加载时检查是否为HTTPS，如果不是则跳转
@@ -478,6 +364,19 @@
                 videoElement.srcObject.getTracks().forEach(track => track.stop());
             }
         });
+
+        // Web Share API for sharing
+        async function shareSite() {
+            try {
+                await navigator.share({
+                    title: 'My Lucky Direction - Your Lucky Compass',
+                    text: 'Check out my lucky direction!',
+                    url: window.location.href
+                });
+            } catch (err) {
+                alert('Share failed: ' + err);
+            }
+        }
     </script>
 </body>
 </html>
