@@ -40,10 +40,17 @@ button, input[type="submit"] {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    min-height: 50px;  /* 增大触摸区域 */
+    font-size: 16px;   /* 避免手机自动缩放 */
 }
 
 button:hover, input[type="submit"]:hover {
     background-color: #FFC300;
+}
+
+input[type="number"] {
+    min-height: 50px;  /* 增大触摸区域 */
+    font-size: 16px;   /* 避免手机自动缩放 */
 }
 
 form {
@@ -80,15 +87,25 @@ footer {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    nav .container {
+        flex-direction: column;  /* 纵向排列 */
+        gap: 10px;
+    }
     nav a {
         display: block;
         margin: 10px 0;
+        padding: 8px 0;
+        text-align: center;
     }
     table {
         font-size: 14px;
     }
     section {
         padding: 10px;
+    }
+    #calculateBtn, #permissionButton {
+        width: 100%;       /* 按钮占满屏幕宽度 */
+        max-width: none;   /* 取消原有限制 */
     }
 }
 
@@ -115,18 +132,36 @@ section {
 }
 
 #compass {
+    width: 80vw;  /* 占屏幕宽度的80% */
+    height: 80vw;
+    max-width: 300px;  /* 最大不超过300px */
+    max-height: 300px;
     position: relative;
     border-radius: 50%;
     background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke="%23ddd" stroke-width="1"/><line x1="50" y1="5" x2="50" y2="15" stroke="%23333" stroke-width="1"/><line x1="50" y1="85" x2="50" y2="95" stroke="%23333" stroke-width="1"/><line x1="5" y1="50" x2="15" y2="50" stroke="%23333" stroke-width="1"/><line x1="85" y1="50" x2="95" y2="50" stroke="%23333" stroke-width="1"/><text x="50" y="12" text-anchor="middle" font-size="6">N</text><text x="50" y="92" text-anchor="middle" font-size="6">S</text><text x="12" y="53" text-anchor="middle" font-size="6">W</text><text x="88" y="53" text-anchor="middle" font-size="6">E</text></svg>') center center no-repeat;
     background-size: contain;
 }
 
-.needle {
-    text-shadow: 0 0 3px rgba(0,0,0,0.3);
+#camera {
+    width: 90vw;  /* 占屏幕宽度的90% */
+    height: 90vw;
+    max-width: 320px;
+    max-height: 320px;
 }
 
-.lucky-text {
+.needle {
+    text-shadow: 0 0 3px rgba(0,0,0,0.3);
+    font-size: 24px;
+}
+
+.camera-needle {
+    font-size: 32px;
+}
+
+.lucky-text, .camera-lucky-text {
     text-shadow: 0 0 2px rgba(0,0,0,0.2);
+    font-size: 14px;
+    white-space: nowrap;  /* 避免文字换行 */
 }
 
 .text-shadow {
