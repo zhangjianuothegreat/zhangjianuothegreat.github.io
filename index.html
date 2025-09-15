@@ -48,6 +48,49 @@
                 <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2024" class="w-full max-w-xs p-2 border rounded-md">
                 <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" class="w-full max-w-xs p-2 border rounded-md">
                 <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" class="w-full max-w-xs p-2 border rounded-md">
+                <select id="timezone" class="w-full max-w-xs p-2 border rounded-md">
+                    <!-- 全球所有时区列表，按UTC偏移量排序 -->
+                    <option value="-12">UTC-12:00 (Baker Island, Howland Island)</option>
+                    <option value="-11">UTC-11:00 (American Samoa, Niue)</option>
+                    <option value="-10">UTC-10:00 (Hawaii)</option>
+                    <option value="-9.5">UTC-09:30 (Marquesas Islands)</option>
+                    <option value="-9">UTC-09:00 (Alaska)</option>
+                    <option value="-8">UTC-08:00 (Pacific Time, Baja California)</option>
+                    <option value="-7">UTC-07:00 (Mountain Time)</option>
+                    <option value="-6">UTC-06:00 (Central Time, Saskatchewan)</option>
+                    <option value="-5">UTC-05:00 (Eastern Time, Bogota, Lima)</option>
+                    <option value="-4.5">UTC-04:30 (Venezuela)</option>
+                    <option value="-4">UTC-04:00 (Atlantic Time, Santiago, La Paz)</option>
+                    <option value="-3.5">UTC-03:30 (Newfoundland)</option>
+                    <option value="-3">UTC-03:00 (Buenos Aires, Sao Paulo, Greenland)</option>
+                    <option value="-2">UTC-02:00 (South Georgia and the South Sandwich Islands)</option>
+                    <option value="-1">UTC-01:00 (Azores, Cape Verde Islands)</option>
+                    <option value="0">UTC±00:00 (London, Dublin, Lisbon, Reykjavik)</option>
+                    <option value="1">UTC+01:00 (Paris, Berlin, Rome, Lagos, Johannesburg)</option>
+                    <option value="2">UTC+02:00 (Istanbul, Cairo, Johannesburg, Athens)</option>
+                    <option value="3">UTC+03:00 (Moscow, Kuwait, Riyadh, Nairobi)</option>
+                    <option value="3.5">UTC+03:30 (Tehran)</option>
+                    <option value="4">UTC+04:00 (Dubai, Baku, Tbilisi)</option>
+                    <option value="4.5">UTC+04:30 (Kabul)</option>
+                    <option value="5">UTC+05:00 (Islamabad, Karachi, Tashkent)</option>
+                    <option value="5.5">UTC+05:30 (New Delhi, Colombo)</option>
+                    <option value="5.75">UTC+05:45 (Kathmandu)</option>
+                    <option value="6">UTC+06:00 (Dhaka, Astana)</option>
+                    <option value="6.5">UTC+06:30 (Yangon)</option>
+                    <option value="7">UTC+07:00 (Bangkok, Hanoi, Jakarta)</option>
+                    <option value="8">UTC+08:00 (Beijing, Singapore, Hong Kong, Perth)</option>
+                    <option value="8.75">UTC+08:45 (Eucla)</option>
+                    <option value="9">UTC+09:00 (Tokyo, Seoul, Osaka, Yakutsk)</option>
+                    <option value="9.5">UTC+09:30 (Adelaide, Darwin)</option>
+                    <option value="10">UTC+10:00 (Sydney, Melbourne, Vladivostok)</option>
+                    <option value="10.5">UTC+10:30 (Lord Howe Island)</option>
+                    <option value="11">UTC+11:00 (Brisbane, Solomon Islands, New Caledonia)</option>
+                    <option value="11.5">UTC+11:30 (Norfolk Island)</option>
+                    <option value="12">UTC+12:00 (Auckland, Wellington, Fiji, Kamchatka)</option>
+                    <option value="12.75">UTC+12:45 (Chatham Islands)</option>
+                    <option value="13">UTC+13:00 (Samoa, Tonga)</option>
+                    <option value="14">UTC+14:00 (Line Islands)</option>
+                </select>
                 <button id="calculateBtn" class="w-full max-w-xs bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Find My Lucky Direction</button>
             </div>
         </section>
@@ -163,6 +206,7 @@
             const year = parseInt(document.getElementById('year').value);
             const month = parseInt(document.getElementById('month').value);
             const day = parseInt(document.getElementById('day').value);
+            const timezone = document.getElementById('timezone').value;
 
             // 输入验证
             if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
@@ -188,7 +232,7 @@
                 rotationHintAdded = false; // 重置旋转提示状态
 
                 // 调用后端API
-                const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}`);
+                const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}&timezone=${timezone}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
                 if (data.error) {
@@ -200,17 +244,16 @@
                 document.getElementById('results').innerHTML = `
                     <div id="errorContainer"></div>
                     <p><b>Your Cosmic Calendar:</b> ${data.lunar_date}</p>
-                    <p><b>Your Destiny Blueprint (BaZi):</b> ${data.bazi}</p>
-                    <p><b>Your Core Element:</b> ${data.element}</p>
-                    <p><b>Your Lucky Direction:</b> ${data.joy_direction} (${data.angle}°)</p>
-                    <p><b>Cosmic Insight:</b> ${data.explanation}</p>
-                    <p class="mindfulness">Your lucky direction is no ordinary compass point—it’s a cosmic key! Powered by Wu Xing’s interplay of Wood, Fire, Earth, Metal, and Water, plus your unique birth chart and real-time location, this direction channels the universe’s energy to boost your luck. Face ${data.joy_direction}, sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a>, and feel the cosmic flow spark success and serenity!</p>
-					<p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with your location, keeping your luck on point!</p>
+                    <p><b>Your Destiny Blueprint (BaZi):</b> ${data.bazi_attributes.join(', ')}</p>
+                    <p><b>Your Celestial Star:</b> ${data.mansion} - ${data.mansion_description}</p>
+                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree}°</p>
+                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion}, rotate your phone to align with ${data.lucky_degree}° and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
+                    <p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with the stars, keeping your luck on point!</p>
                 `;
                 // 显示权限提示
                 document.getElementById('permissionNotice').style.display = 'block';
 
-                currentJoyAngle = data.angle || 0;
+                currentJoyAngle = data.lucky_degree || 0;
                 // 更新幸运度数显示
                 document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
 
@@ -382,3 +425,4 @@
     </script>
 </body>
 </html>
+    
