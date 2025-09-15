@@ -234,7 +234,7 @@
                 console.log('API response:', data);
                 
                 if (data.error) {
-                    document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${data.error}. Please try again or contact support.</p></div>`;
+                    document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${data.error}. Please try a different date or contact support at support@yourluckycompass.com.</p></div>`;
                     document.getElementById('permissionNotice').style.display = 'none';
                     return;
                 }
@@ -265,7 +265,7 @@
 
             } catch (error) {
                 console.error('Calculation error:', error);
-                document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${error.message}. Please try again or contact support.</p></div>`;
+                document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${error.message}. Please try again or contact support at support@yourluckycompass.com.</p></div>`;
             }
         }
 
