@@ -176,6 +176,10 @@
             text-align: left;
             padding-left: 10%;
         }
+        .lunar-mansion {
+            font-style: italic;
+            color: #4b5563;
+        }
     </style>
 </head>
 <body>
@@ -315,10 +319,12 @@
                     return;
                 }
 
-                // 移除八字解释部分，只保留需要的内容
+                // 显示结果，包含28星宿信息
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
+                    <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
+                    <p class="lunar-mansion">${data.lunar_mansion_description}</p>
                     <p><b>Lucky Angle:</b> ${data.angle}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
