@@ -279,17 +279,24 @@
                 const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}&timezone=${timezone}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
+                console.log('API Response:', data); // 调试日志
 
                 if (data.error) {
                     alert(`Calculation failed: ${data.error}`);
                     return;
                 }
 
-                // 显示结果
-                let explanationsHTML = data.bazi_explanations.map((exp, index) => {
-                    const pillars = data.bazi.split(' ');
-                    return `<p><b>${pillars[index]}:</b> ${exp}</p>`;
-                }).join('');
+                // 检查 bazi_explanations 是否存在且是数组
+                let explanationsHTML = '';
+                if (Array.isArray(data.bazi_explanations)) {
+                    explanationsHTML = data.bazi_explanations.map((exp, index) => {
+                        const pillars = data.bazi.split(' ');
+                        return `<p><b>${pillars[index]}:</b> ${exp}</p>`;
+                    }).join('');
+                } else {
+                    console.error('bazi_explanations is not an array:', data.bazi_explanations);
+                    explanationsHTML = '<p>Error: BaZi explanations not available.</p>';
+                }
 
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
