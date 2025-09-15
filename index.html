@@ -235,19 +235,26 @@
                 const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}&timezone=${timezone}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
+                
+                // 检查是否有错误信息
                 if (data.error) {
-                    alert(`Calculation failed: ${data.error}`);
+                    document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${data.error}</p></div>`;
+                    document.getElementById('permissionNotice').style.display = 'none';
                     return;
                 }
 
-                // 显示测算结果
+                // 显示测算结果，增加对bazi_attributes的空值检查
+                const baziAttributes = data.bazi_attributes && Array.isArray(data.bazi_attributes) 
+                    ? data.bazi_attributes.join(', ') 
+                    : 'No data available';
+                
                 document.getElementById('results').innerHTML = `
                     <div id="errorContainer"></div>
-                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date}</p>
-                    <p><b>Your Destiny Blueprint (BaZi):</b> ${data.bazi_attributes.join(', ')}</p>
-                    <p><b>Your Celestial Star:</b> ${data.mansion} - ${data.mansion_description}</p>
-                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree}°</p>
-                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion}, rotate your phone to align with ${data.lucky_degree}° and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
+                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date || 'N/A'}</p>
+                    <p><b>Your Destiny Blueprint (BaZi):</b> ${baziAttributes}</p>
+                    <p><b>Your Celestial Star:</b> ${data.mansion || 'N/A'} - ${data.mansion_description || 'N/A'}</p>
+                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : 'N/A'}</p>
+                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion || ''}, rotate your phone to align with ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : ''} and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
                     <p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with the stars, keeping your luck on point!</p>
                 `;
                 // 显示权限提示
@@ -425,4 +432,3 @@
     </script>
 </body>
 </html>
-    
