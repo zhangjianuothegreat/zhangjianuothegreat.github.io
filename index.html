@@ -317,15 +317,23 @@
 
                 // 检查 bazi_explanations 是否存在且是数组
                 let explanationsHTML = '';
-                const pillarLabels = ['Year', 'Month', 'Day']; // 使用固定标签对应三柱
-                if (Array.isArray(data.bazi_explanations)) {
-                    explanationsHTML = data.bazi_explanations.map((exp, index) => {
-                        // 使用固定标签替代拆分的bazi，避免索引不匹配
-                        return `<p><b>${pillarLabels[index]}:</b> ${exp}</p>`;
-                    }).join('');
+                const pillarLabels = ['Year', 'Month', 'Day'];
+                
+                // 更健壮的处理方式
+                if (data.bazi_explanations && Array.isArray(data.bazi_explanations)) {
+                    // 确保我们有足够的解释项
+                    const explanations = data.bazi_explanations;
+                    for (let i = 0; i < 3; i++) {
+                        const label = pillarLabels[i] || `Pillar ${i + 1}`;
+                        const exp = explanations[i] || 'Positive celestial energy enhancing your luck';
+                        explanationsHTML += `<p><b>${label}:</b> ${exp}</p>`;
+                    }
                 } else {
-                    console.error('bazi_explanations is not an array:', data.bazi_explanations);
-                    explanationsHTML = '<p>Error: BaZi explanations not available.</p>';
+                    // 如果后端没有返回解释，显示默认占位符
+                    explanationsHTML = pillarLabels.map(label => 
+                        `<p><b>${label}:</b> Positive celestial energy enhancing your luck</p>`
+                    ).join('');
+                    console.warn('BaZi explanations not available from server, using fallback');
                 }
 
                 document.getElementById('results').innerHTML = `
