@@ -19,6 +19,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <style>
+        /* 保持原有样式不变 */
         body {
             background-color: #f3f4f6;
             font-family: Arial, sans-serif;
@@ -188,7 +189,7 @@
         This app is for entertainment purposes only. Results are not guaranteed. Your birth date is not stored.
     </p>
     <p>Enter your birth date to find your lucky direction.</p>
-    <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2024">
+    <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2025">
     <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12">
     <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
     <input type="number" id="hour" placeholder="Hour (0-23, optional)" min="0" max="23">
@@ -196,6 +197,7 @@
     <input type="number" id="minute" placeholder="Minute (0-59, optional)" min="0" max="59">
     <p class="optional-field">* Minute is optional - if unknown, leave blank</p>
     <select id="timezone">
+        <!-- 保持原有时区选项不变 -->
         <option value="-12">UTC-12:00 (Baker Island)</option>
         <option value="-11">UTC-11:00 (Samoa)</option>
         <option value="-10">UTC-10:00 (Hawaii)</option>
@@ -277,8 +279,8 @@
             const timezone = document.getElementById('timezone').value;
 
             // 输入验证 - 核心字段必须填写
-            if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
-                alert("Please enter a valid birth date (Year: 1900-2024, Month: 1-12, Day: 1-31).");
+            if (!year || !month || !day || year < 1900 || year > 2025 || month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("Please enter a valid birth date (Year: 1900-2025, Month: 1-12, Day: 1-31).");
                 return;
             }
 
@@ -319,13 +321,25 @@
                     return;
                 }
 
-                // 显示结果，包含28星宿信息
+                // 显示结果，包含28星宿信息，并增加错误处理
+                let lunarMansionHtml = '';
+                if (data.lunar_mansion && data.lunar_mansion_description) {
+                    lunarMansionHtml = `
+                        <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
+                        <p class="lunar-mansion">${data.lunar_mansion_description}</p>
+                    `;
+                } else {
+                    lunarMansionHtml = `
+                        <p><b>Lunar Mansion:</b> Not available</p>
+                        <p class="lunar-mansion">Could not calculate lunar mansion for this date.</p>
+                    `;
+                }
+
                 document.getElementById('results').innerHTML = `
-                    <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
-                    <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
-                    <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
-                    <p class="lunar-mansion">${data.lunar_mansion_description}</p>
-                    <p><b>Lucky Angle:</b> ${data.angle}°</p>
+                    <p><b>Chinese Lunar Date:</b> ${data.lunar_date || 'Not available'}</p>
+                    <p><b>Your Destiny Code (BaZi):</b> ${data.bazi || 'Not available'}</p>
+                    ${lunarMansionHtml}
+                    <p><b>Lucky Angle:</b> ${data.angle || 'Not available'}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
 
@@ -464,3 +478,4 @@
     </script>
 </body>
 </html>
+    
