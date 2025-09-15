@@ -286,11 +286,16 @@
                 }
 
                 // 显示结果
+                let explanationsHTML = data.bazi_explanations.map((exp, index) => {
+                    const pillars = data.bazi.split(' ');
+                    return `<p><b>${pillars[index]}:</b> ${exp}</p>`;
+                }).join('');
+
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
-                    <p><b>Core Element:</b> ${data.element}</p>
-                    <p><b>Insight:</b> ${data.explanation}</p>
+                    ${explanationsHTML}
+                    <p><b>Lucky Angle:</b> ${data.angle}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
 
@@ -334,7 +339,7 @@
                     document.querySelector('.camera-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     
-                    document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
+                    document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}° | Lucky Angle: ${joyAngle}°`;
                 }
 
                 // 启动摄像头
