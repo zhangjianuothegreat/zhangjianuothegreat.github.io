@@ -3,9 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Discover your lucky direction with our exclusive Chinese astrology compass, blending your birth date, Five Elements, and real-time geographic positioning for cosmic success.">
-    <meta name="keywords" content="lucky direction, Chinese astrology compass, Bazi direction, personal luck">
-    <meta name="theme-color" content="#1e3a8a">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-hashes' 'unsafe-inline'; 
@@ -17,343 +14,367 @@
         worker-src 'self' blob:;
         frame-src 'self' blob:;
     ">
-    <title>Find Your Lucky Direction - Your Lucky Compass</title>
+    <meta name="theme-color" content="#1e3a8a">
+    <title>Lucky Direction Compass</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            color: #333;
+            margin: 0;
+        }
+        h1 {
+            color: #1e3a8a;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        input {
+            margin: 10px auto;
+            padding: 12px;
+            width: 80%;
+            max-width: 300px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            display: block;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px auto;
+            border-radius: 6px;
+            display: block;
+        }
+        button:hover {
+            background-color: #1e40af;
+        }
+        #results {
+            text-align: left;
+            max-width: 300px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #compass {
+            margin: 20px auto;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #1e3a8a;
+            border-radius: 50%;
+            position: relative;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .compass-needle-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .needle {
+            font-size: 30px;
+            color: red;
+            line-height: 1;
+        }
+        .lucky-text {
+            font-size: 18px;
+            color: #d97706;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        #camera {
+            width: 90%;
+            max-width: 300px;
+            height: 300px;
+            border: 2px solid #1e3a8a;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            margin: 20px auto;
+            background-color: #000;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .camera-needle-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .camera-needle {
+            font-size: 40px;
+            color: red;
+            line-height: 1;
+        }
+        .camera-lucky-text {
+            font-size: 24px;
+            color: #d97706;
+            font-weight: bold;
+            text-shadow: 0 0 3px #000;
+            margin-top: 5px;
+        }
+        #degree {
+            font-size: 18px;
+            color: #1e3a8a;
+            margin: 10px;
+        }
+        .disclaimer {
+            font-size: 12px;
+            color: #666;
+            max-width: 300px;
+            margin: 10px auto;
+        }
+        .mindfulness {
+            font-size: 14px;
+            color: #4b5563;
+            max-width: 300px;
+            margin: 10px auto;
+        }
+        .permission-prompt {
+            color: #dc2626;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
-    <!-- 导航栏 -->
-    <nav class="bg-white shadow-md p-4">
-        <div class="container mx-auto flex justify-center space-x-4">
-            <a href="https://www.yourluckycompass.com/" class="text-blue-600 hover:text-blue-700">Home</a>
-            <a href="https://www.yourluckycompass.com/bazi" class="text-blue-600 hover:text-blue-700">Bazi Reading</a>
-            <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:text-blue-700">Lucky City Match</a>
-            <a href="https://www.yourluckycompass.com/lucky_compass" class="text-blue-600 hover:text-blue-700 font-bold">Lucky Compass</a>
-            <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:text-blue-700">Sound Bath</a>
+<body>
+    <h1>Lucky Direction Compass</h1>
+    <p class="disclaimer">
+        This app is for entertainment purposes only. Results are not guaranteed. Your birth date is not stored.
+    </p>
+    <p>Enter your birth date to find your lucky direction.</p>
+    <input type="number" id="year" placeholder="Year (e.g. 1984)" min="1900" max="2024">
+    <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12">
+    <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31">
+    <button id="calculateBtn">Find My Lucky Direction</button>
+
+    <div id="results"></div>
+
+    <div id="compass">
+        <!-- 指南针箭头和LUCKY文字容器 -->
+        <div class="compass-needle-container">
+            <div class="needle">↑</div>
+            <div class="lucky-text">LUCKY</div>
         </div>
-    </nav>
-
-    <div class="container mx-auto p-4 max-w-4xl">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-800">Find Your Lucky Direction</h1>
-            <p class="mt-2 text-lg">Discover the direction that boosts your luck based on your birth date and real-time geographic positioning!</p>
-        </header>
-
-        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <p class="mb-4">Unlock the secrets of your destiny with our exclusive Lucky Compass! Rooted in 3,000 years of Chinese astrology, our cutting-edge algorithm blends your birth date, Five Elements balance, and real-time geographic positioning with the ancient art of Wu Xing (Five Phases) to reveal your personal lucky direction. Watch the compass dynamically align with the cosmos, guiding you to success and harmony—way beyond any ordinary app!</p>
-            <div class="space-y-4">
-                <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2024" class="w-full max-w-xs p-2 border rounded-md">
-                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" class="w-full max-w-xs p-2 border rounded-md">
-                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" class="w-full max-w-xs p-2 border rounded-md">
-                <select id="timezone" class="w-full max-w-xs p-2 border rounded-md">
-                    <option value="8" selected>UTC+8 (Beijing, Singapore)</option>
-                    <option value="-5">UTC-5 (New York)</option>
-                    <option value="0">UTC+0 (London)</option>
-                    <option value="9">UTC+9 (Tokyo)</option>
-                    <option value="5.5">UTC+5.5 (New Delhi)</option>
-                    <option value="-8">UTC-8 (Los Angeles)</option>
-                    <option value="10">UTC+10 (Sydney)</option>
-                    <option value="1">UTC+1 (Paris)</option>
-                    <option value="-3">UTC-3 (Buenos Aires)</option>
-                    <option value="7">UTC+7 (Bangkok)</option>
-                    <option value="12">UTC+12 (Auckland)</option>
-                    <option value="3">UTC+3 (Moscow)</option>
-                    <option value="-6">UTC-6 (Chicago)</option>
-                    <option value="4">UTC+4 (Dubai)</option>
-                    <option value="2">UTC+2 (Cairo)</option>
-                </select>
-                <button id="calculateBtn" class="w-full max-w-xs bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Find My Lucky Direction</button>
-            </div>
-        </section>
-
-        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div id="permissionNotice" class="hidden bg-yellow-50 p-4 rounded-md border border-yellow-400 text-yellow-800">
-                To use all features, please allow access to your device's orientation (compass) and camera.
-                <button id="permissionButton" class="mt-2 bg-yellow-500 text-white p-2 rounded-md hover:bg-yellow-600">Allow Permissions</button>
-            </div>
-
-            <div id="results" class="text-left max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
-                <div id="errorContainer"></div>
-            </div>
-
-            <div id="directionTitle" class="text-blue-800 font-medium mt-4">Current Direction / Lucky Direction</div>
-            <div id="degree" class="text-blue-800 text-lg mt-2">0° / --°</div>
-
-            <div id="compass" class="mx-auto w-48 h-48 border-2 border-blue-800 rounded-full relative bg-white shadow-md mt-4">
-                <div class="compass-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
-                    <div class="needle text-red-600 text-2xl">↑</div>
-                    <div class="lucky-text text-yellow-600 font-bold text-base mt-1">LUCKY</div>
-                </div>
-            </div>
-
-            <div id="camera" class="mx-auto w-64 h-64 border-2 border-blue-800 rounded-full overflow-hidden relative bg-black mt-4">
-                <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-                <div id="overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none">
-                    <div class="camera-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
-                        <div class="camera-needle text-red-600 text-3xl">↑</div>
-                        <div class="camera-lucky-text text-yellow-600 font-bold text-lg mt-1 text-shadow">LUCKY</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 发现更多工具 -->
-        <section class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-xl font-semibold mb-4 text-blue-800">Discover More Luck</h2>
-            <p class="mb-4">Your lucky direction is just the start! Explore these tools to enhance your fortune and well-being.</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gray-50 p-4 rounded-md">
-                    <h3 class="text-lg font-medium mb-2 text-blue-800">Get Your Bazi Reading</h3>
-                    <p class="text-sm text-gray-600 mb-2">Uncover your Five Elements balance and personality insights.</p>
-                    <a href="https://www.yourluckycompass.com/bazi" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Try Bazi Reading</a>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-md">
-                    <h3 class="text-lg font-medium mb-2 text-blue-800">Find Your Lucky City</h3>
-                    <p class="text-sm text-gray-600 mb-2">Match your elements to cities that boost your luck.</p>
-                    <a href="https://www.yourluckycompass.com/lucky_city" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Try Lucky City Match</a>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-md">
-                    <h3 class="text-lg font-medium mb-2 text-blue-800">Relax with Sound Bath</h3>
-                    <p class="text-sm text-gray-600 mb-2">Balance your energy with soothing sound meditations.</p>
-                    <a href="https://www.yourluckycompass.com/sound_bath" class="inline-block bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Start Sound Bath</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- 广告位 -->
-        <div id="ad-placeholder" class="ad text-center text-gray-500 my-4">
-            Ad Space - Coming Soon!
-        </div>
-
-        <footer class="text-center mt-8 text-sm text-gray-500">
-            <button id="installButton" class="hidden bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 mb-4">Install App</button>
-            <p>Based on ancient Chinese wisdom | For entertainment only</p>
-            <p>© 2025 Your Lucky Compass</p>
-        </footer>
     </div>
 
+    <div id="degree"></div>
+
+    <div id="camera">
+        <video id="video" autoplay playsinline></video>
+        <div id="overlay">
+            <!-- 摄像头箭头和LUCKY文字容器 -->
+            <div class="camera-needle-container">
+                <div class="camera-needle">↑</div>
+                <div class="camera-lucky-text">LUCKY</div>
+            </div>
+        </div>
+    </div>
+
+    <button id="installButton" style="display: none;">Install App</button>
+
     <script>
-        // HTTPS强制跳转（非本地环境）
+        // 页面加载时检查是否为HTTPS，如果不是则跳转
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
 
-        // 全局变量
-        let compassEventListener = null;
-        let currentJoyAngle = 0;
-        let lastAdjustedAngle = 0;
-        let hasCompassError = false;
-        let hasCameraError = false;
-        let isInstalled = false;
-        let deferredPrompt;
-        let rotationHintAdded = false;
+        async function calculateBazi() {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const day = parseInt(document.getElementById('day').value);
 
-        // 事件绑定
-        document.getElementById('calculateBtn').addEventListener('click', calculateBazi);
-        document.getElementById('permissionButton').addEventListener('click', tryGetPermissions);
-        
-        // PWA安装处理
+            // 输入验证
+            if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("Please enter a valid birth date (Year: 1900-2024, Month: 1-12, Day: 1-31).");
+                return;
+            }
+
+            try {
+                const testDate = new Date(year, month - 1, day);
+                if (testDate.getFullYear() !== year || testDate.getMonth() + 1 !== month || testDate.getDate() !== day) {
+                    throw new Error("Invalid date.");
+                }
+            } catch (e) {
+                alert("Invalid date. Check your input (e.g., February has 28 or 29 days).");
+                return;
+            }
+
+            try {
+                // 调用后端API
+                const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}`);
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert(`Calculation failed: ${data.error}`);
+                    return;
+                }
+
+                // 显示结果
+                document.getElementById('results').innerHTML = `
+                    <p><b>Chinese Lunar Date:</b> ${data.lunar_date}</p>
+                    <p><b>Your Destiny Code (BaZi):</b> ${data.bazi}</p>
+                    <p><b>Core Element:</b> ${data.element}</p>
+                    <p><b>Lucky Direction:</b> ${data.joy_direction}</p>
+                    <p><b>Insight:</b> ${data.explanation}</p>
+                    <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
+                `;
+
+                const joyAngle = data.angle || 0;
+                
+                // 启动指南针
+                if ("DeviceOrientationEvent" in window) {
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        // iOS设备需要单独请求权限
+                        try {
+                            const permissionState = await DeviceOrientationEvent.requestPermission();
+                            if (permissionState === 'granted') {
+                                window.addEventListener("deviceorientation", updateCompass);
+                                document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
+                            } else {
+                                document.getElementById('results').innerHTML += `<p class="permission-prompt">Compass permission denied. Please enable it in your browser settings.</p>`;
+                            }
+                        } catch (err) {
+                            document.getElementById('results').innerHTML += `<p>Compass error: ${err.message}</p>`;
+                        }
+                    } else {
+                        // 安卓设备直接使用
+                        window.addEventListener("deviceorientation", updateCompass);
+                        document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
+                    }
+                } else {
+                    document.getElementById('results').innerHTML += `<p>Compass not supported on this device. Use a phone with a compass sensor.</p>`;
+                }
+
+                // 指南针更新函数
+                function updateCompass(event) {
+                    const alpha = event.alpha || 0;
+                    // 计算调整后的角度，使箭头始终指向幸运方向
+                    const adjustedAngle = (360 - alpha + joyAngle) % 360;
+                    
+                    // 更新指南针箭头和LUCKY文字（作为一个整体旋转）
+                    document.querySelector('.compass-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    
+                    // 更新摄像头箭头和LUCKY文字（作为一个整体旋转）
+                    document.querySelector('.camera-needle-container').style.transform = 
+                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    
+                    document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}°`;
+                }
+
+                // 启动摄像头
+                startCamera();
+
+            } catch (error) {
+                console.error('Calculation error:', error);
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        // 摄像头启动函数
+        async function startCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                document.getElementById('results').innerHTML += `<p>Camera not supported on this device.</p>`;
+                return;
+            }
+
+            // 手机摄像头配置：优先后置摄像头
+            const constraints = {
+                video: {
+                    facingMode: { ideal: 'environment' },
+                    width: { ideal: 480 },
+                    height: { ideal: 640 },
+                    frameRate: { ideal: 30 }
+                }
+            };
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+                
+                // 视频播放错误处理
+                videoElement.onerror = function(error) {
+                    stream.getTracks().forEach(track => track.stop());
+                    console.error('Video error:', error);
+                };
+            } catch (err) {
+                let errorMsg = '';
+                switch(err.name) {
+                    case 'NotAllowedError':
+                        errorMsg = 'Camera permission denied. Please enable camera access in your browser settings.';
+                        break;
+                    case 'NotFoundError':
+                        errorMsg = 'No camera found on this device.';
+                        break;
+                    case 'NotSupportedError':
+                        errorMsg = 'Camera access is not supported in this browser.';
+                        break;
+                    default:
+                        errorMsg = `Camera error: ${err.message}`;
+                }
+                document.getElementById('results').innerHTML += `<p class="permission-prompt">${errorMsg}</p>`;
+                console.error('Camera error:', err);
+            }
+        }
+
+        // PWA 安装功能
+        let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('installButton').style.display = 'block';
         });
 
-        document.getElementById('installButton').addEventListener('click', async () => {
+        function installApp() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
-                if (result.outcome === 'accepted') {
-                    isInstalled = true;
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install');
+                    }
+                    deferredPrompt = null;
                     document.getElementById('installButton').style.display = 'none';
-                }
-                deferredPrompt = null;
-            }
-        });
-
-        // 核心：调用后端测算
-        async function calculateBazi() {
-            const year = parseInt(document.getElementById('year').value);
-            const month = parseInt(document.getElementById('month').value);
-            const day = parseInt(document.getElementById('day').value);
-            const timezone = document.getElementById('timezone').value;
-
-            // 前端基础验证
-            if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
-                alert("Please enter a valid birth date (Year: 1900-2024, Month: 1-12, Day: 1-31).");
-                return;
-            }
-            try {
-                const testDate = new Date(year, month - 1, day);
-                if (testDate.getFullYear() !== year || testDate.getMonth() + 1 !== month || testDate.getDate() !== day) {
-                    throw new Error("Invalid date (e.g., February has 28 or 29 days).");
-                }
-            } catch (e) {
-                alert("Invalid date: " + e.message);
-                return;
-            }
-
-            try {
-                // 重置状态+显示加载
-                document.getElementById('errorContainer').innerHTML = '';
-                document.getElementById('degree').textContent = '0° / --°';
-                document.getElementById('results').innerHTML = '<p class="text-blue-600">Calculating your cosmic destiny...</p>';
-                hasCompassError = false;
-                hasCameraError = false;
-                rotationHintAdded = false;
-
-                // 调用后端API（带完整参数）
-                const url = new URL('https://lucky-compass-backend.fly.dev/calculate');
-                url.searchParams.append('year', year);
-                url.searchParams.append('month', month);
-                url.searchParams.append('day', day);
-                url.searchParams.append('timezone', timezone);
-
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
                 });
-
-                // 处理HTTP错误
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'Server error' }));
-                    throw new Error(errorData.error || `Server error: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                // 显示结果（严格适配后端返回字段）
-                const baziText = data.bazi_attributes && data.bazi_attributes.length 
-                    ? data.bazi_attributes.join(', ') 
-                    : 'No data available';
-                
-                document.getElementById('results').innerHTML = `
-                    <div id="errorContainer"></div>
-                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date || 'N/A'}</p>
-                    <p><b>Your Destiny Blueprint (BaZi):</b> ${baziText}</p>
-                    <p><b>Your Celestial Star:</b> ${data.mansion || 'N/A'} - ${data.mansion_description || 'N/A'}</p>
-                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : 'N/A'}</p>
-                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion || ''}, rotate your phone to align with ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : ''} and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
-                    <p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with the stars, keeping your luck on point!</p>
-                `;
-
-                // 显示权限提示+更新指南针角度
-                document.getElementById('permissionNotice').style.display = 'block';
-                currentJoyAngle = data.lucky_degree || 0;
-                document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
-
-                // 重置指南针监听器
-                if (compassEventListener) {
-                    window.removeEventListener("deviceorientation", compassEventListener);
-                }
-                tryGetPermissions();
-
-            } catch (error) {
-                // 错误显示（给用户明确提示）
-                console.error('Calculation error:', error);
-                document.getElementById('results').innerHTML = `<div id="errorContainer"><p class="text-red-600">Error: ${error.message}</p></div>`;
             }
         }
 
-        // 权限请求（指南针+摄像头）
-        async function tryGetPermissions() {
-            try {
-                const compassGranted = await requestCompassPermission();
-                if (compassGranted) {
-                    await startCamera();
-                }
-            } catch (error) {
-                console.log("Permission request failed:", error);
-            }
-        }
-
-        // 指南针权限
-        async function requestCompassPermission() {
-            if (!("DeviceOrientationEvent" in window)) {
-                document.getElementById('errorContainer').innerHTML += `<p>Compass not supported on this device.</p>`;
-                hasCompassError = true;
-                return false;
+        // 页面加载后绑定按钮事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (calculateBtn) {
+                calculateBtn.addEventListener('click', calculateBazi);
             }
 
-            try {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    const permission = await DeviceOrientationEvent.requestPermission();
-                    if (permission !== 'granted') {
-                        document.getElementById('errorContainer').innerHTML += `<p class="permission-prompt">Compass permission denied. Go to Settings → Safari → Privacy & Security → Enable "Motion & Orientation Access" for this site.</p>`;
-                        hasCompassError = true;
-                        return false;
-                    }
-                }
-
-                // 绑定指南针旋转逻辑
-                compassEventListener = (event) => {
-                    const alpha = event.alpha || 0;
-                    let adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
-                    // 最短旋转路径计算
-                    if (adjustedAngle - lastAdjustedAngle > 180) adjustedAngle -= 360;
-                    if (adjustedAngle - lastAdjustedAngle < -180) adjustedAngle += 360;
-                    lastAdjustedAngle = adjustedAngle;
-                    // 更新指针旋转
-                    document.querySelector('.compass-needle-container').style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    document.querySelector('.camera-needle-container').style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
-                };
-                window.addEventListener("deviceorientation", compassEventListener);
-
-                // 添加旋转提示
-                if (!rotationHintAdded) {
-                    document.getElementById('errorContainer').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
-                    rotationHintAdded = true;
-                }
-                return true;
-
-            } catch (error) {
-                document.getElementById('errorContainer').innerHTML += `<p>Compass access failed: ${error.message}</p>`;
-                hasCompassError = true;
-                return false;
+            const installBtn = document.getElementById('installButton');
+            if (installBtn) {
+                installBtn.addEventListener('click', installApp);
             }
-        }
-
-        // 摄像头权限
-        async function startCamera() {
-            if (!("mediaDevices" in navigator) || !("getUserMedia" in navigator.mediaDevices)) {
-                document.getElementById('errorContainer').innerHTML += `<p>Camera not supported on this device.</p>`;
-                hasCameraError = true;
-                return false;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 300 },
-                        height: { ideal: 300 }
-                    }
-                });
-                document.getElementById('video').srcObject = stream;
-                hasCameraError = false;
-                return true;
-            } catch (error) {
-                let msg = "Camera access failed: ";
-                if (error.name === 'NotAllowedError') msg += "Permission denied (enable in browser settings)";
-                else if (error.name === 'NotFoundError') msg += "No camera found";
-                else msg += error.message;
-                document.getElementById('errorContainer').innerHTML += `<p>${msg}</p>`;
-                hasCameraError = true;
-                return false;
-            }
-        }
-
-        // 页面卸载清理
-        window.addEventListener('beforeunload', () => {
-            if (compassEventListener) window.removeEventListener("deviceorientation", compassEventListener);
-            const video = document.getElementById('video');
-            if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
         });
     </script>
 </body>
