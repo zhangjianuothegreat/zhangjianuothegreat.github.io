@@ -10,7 +10,7 @@
         default-src 'self'; 
         script-src 'self' 'unsafe-hashes' 'unsafe-inline'; 
         script-src-attr 'self' 'unsafe-hashes' 'unsafe-inline'; 
-        connect-src https://lucky-compass-backend.fly.dev https://*.fly.dev http://localhost:8080; 
+        connect-src https://lucky-compass-backend.fly.dev https://*.fly.dev; 
         img-src 'self' data:; 
         media-src 'self' blob: https://zhangjianuothegreat.github.io https://yourluckycompass.com; 
         style-src 'self' 'unsafe-inline';
@@ -22,9 +22,10 @@
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/styles.css"> <!-- 统一CSS -->
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
+    <!-- 导航栏 -->
     <nav class="bg-white shadow-md p-4">
         <div class="container mx-auto flex justify-center space-x-4">
             <a href="https://www.yourluckycompass.com/" class="text-blue-600 hover:text-blue-700">Home</a>
@@ -44,10 +45,11 @@
         <section class="bg-white p-6 rounded-lg shadow-md mb-6">
             <p class="mb-4">Unlock the secrets of your destiny with our exclusive Lucky Compass! Rooted in 3,000 years of Chinese astrology, our cutting-edge algorithm blends your birth date, Five Elements balance, and real-time geographic positioning with the ancient art of Wu Xing (Five Phases) to reveal your personal lucky direction. Watch the compass dynamically align with the cosmos, guiding you to success and harmony—way beyond any ordinary app!</p>
             <div class="space-y-4">
-                <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2100" class="w-full max-w-xs p-2 border rounded-md">
+                <input type="number" id="year" placeholder="Year (e.g., 1984)" min="1900" max="2024" class="w-full max-w-xs p-2 border rounded-md">
                 <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" class="w-full max-w-xs p-2 border rounded-md">
                 <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" class="w-full max-w-xs p-2 border rounded-md">
                 <select id="timezone" class="w-full max-w-xs p-2 border rounded-md">
+                    <!-- 全球时区列表 -->
                     <option value="-12">UTC-12:00 (Baker Island, Howland Island)</option>
                     <option value="-11">UTC-11:00 (American Samoa, Niue)</option>
                     <option value="-10">UTC-10:00 (Hawaii)</option>
@@ -124,6 +126,7 @@
             </div>
         </section>
 
+        <!-- 发现更多幸运工具部分 -->
         <section class="bg-white p-6 rounded-lg shadow-md mb-6">
             <h2 class="text-xl font-semibold mb-4 text-blue-800">Discover More Luck</h2>
             <p class="mb-4">Your lucky direction is just the start! Explore these tools to enhance your fortune and well-being.</p>
@@ -146,6 +149,7 @@
             </div>
         </section>
 
+        <!-- 广告位 -->
         <div id="ad-placeholder" class="ad text-center text-gray-500 my-4">
             Ad Space - Coming Soon!
         </div>
@@ -158,10 +162,12 @@
     </div>
 
     <script>
+        // 页面加载时检查是否为HTTPS，如果不是则跳转
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
 
+        // 全局变量
         let compassEventListener = null;
         let currentJoyAngle = 0;
         let lastAdjustedAngle = 0;
@@ -171,9 +177,11 @@
         let deferredPrompt;
         let rotationHintAdded = false;
 
+        // 事件监听器
         document.getElementById('calculateBtn').addEventListener('click', calculateBazi);
         document.getElementById('permissionButton').addEventListener('click', tryGetPermissions);
-
+        
+        // 处理PWA安装
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -199,8 +207,9 @@
             const day = parseInt(document.getElementById('day').value);
             const timezone = document.getElementById('timezone').value;
 
-            if (!year || !month || !day || year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
-                alert("Please enter a valid birth date (Year: 1900-2100, Month: 1-12, Day: 1-31).");
+            // 输入验证
+            if (!year || !month || !day || year < 1900 || year > 2024 || month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("Please enter a valid birth date (Year: 1900-2024, Month: 1-12, Day: 1-31).");
                 return;
             }
             try {
@@ -214,63 +223,73 @@
             }
 
             try {
+                // 重置状态
                 document.getElementById('errorContainer').innerHTML = '';
                 document.getElementById('degree').textContent = '0° / --°';
                 hasCompassError = false;
                 hasCameraError = false;
                 rotationHintAdded = false;
 
+                // 显示加载状态
                 document.getElementById('results').innerHTML = '<p>Calculating your cosmic destiny...</p>';
                 
-                console.log('Sending request with:', { year, month, day, timezone });
+                // 调用后端API
                 const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?year=${year}&month=${month}&day=${day}&timezone=${timezone}`);
                 
+                // 检查HTTP错误状态
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => null);
                     throw new Error(errorData?.error || `Server error: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('API response:', data);
                 
+                // 检查是否有错误信息
                 if (data.error) {
-                    document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${data.error}. Please try a different date or contact support at support@yourluckycompass.com.</p></div>`;
+                    document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${data.error}</p></div>`;
                     document.getElementById('permissionNotice').style.display = 'none';
                     return;
                 }
 
+                // 显示测算结果，增强对空值的处理
                 const baziAttributes = data.bazi_attributes && Array.isArray(data.bazi_attributes) && data.bazi_attributes.length > 0
                     ? data.bazi_attributes.join(', ') 
-                    : 'Unable to calculate BaZi attributes';
+                    : 'No data available';
                 
                 document.getElementById('results').innerHTML = `
                     <div id="errorContainer"></div>
-                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date || 'Unable to calculate lunar date'}</p>
+                    <p><b>Your Cosmic Calendar:</b> ${data.lunar_date || 'N/A'}</p>
                     <p><b>Your Destiny Blueprint (BaZi):</b> ${baziAttributes}</p>
-                    <p><b>Your Celestial Star:</b> ${data.mansion || 'Unable to calculate celestial star'} - ${data.mansion_description || 'No description available'}</p>
-                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : 'Unable to calculate lucky degree'}</p>
-                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion || 'star'}, rotate your phone to align with ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : 'your lucky direction'} and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
+                    <p><b>Your Celestial Star:</b> ${data.mansion || 'N/A'} - ${data.mansion_description || 'N/A'}</p>
+                    <p><b>Your Lucky Degree:</b> ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : 'N/A'}</p>
+                    <p class="mindfulness">Your lucky degree is your cosmic key! Guided by the celestial ${data.mansion || ''}, rotate your phone to align with ${data.lucky_degree !== undefined ? data.lucky_degree + '°' : ''} and feel the universe’s harmony guide you to inner peace. Sync with a <a href="https://www.yourluckycompass.com/sound_bath" class="text-blue-600 hover:underline">Sound Bath</a> in your <a href="https://www.yourluckycompass.com/lucky_city" class="text-blue-600 hover:underline">Lucky City</a> for ultimate serenity!</p>
                     <p class="text-sm text-gray-600 mt-2">Pro tip: Check your Lucky Compass anytime, anywhere—your cosmic key updates with the stars, keeping your luck on point!</p>
                 `;
+                // 显示权限提示
                 document.getElementById('permissionNotice').style.display = 'block';
 
                 currentJoyAngle = data.lucky_degree || 0;
+                // 更新幸运度数显示
                 document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
 
+                // 移除旧的指南针监听器
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
                 }
 
+                // 尝试自动获取权限
                 tryGetPermissions();
 
             } catch (error) {
                 console.error('Calculation error:', error);
-                document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${error.message}. Please try again or contact support at support@yourluckycompass.com.</p></div>`;
+                document.getElementById('results').innerHTML = `<div id="errorContainer"><p>Error: ${error.message}</p></div>`;
             }
         }
 
+        // 尝试获取权限
         async function tryGetPermissions() {
             try {
+                // 先请求指南针权限，再请求摄像头权限
                 const compassGranted = await requestCompassPermission();
                 if (compassGranted) {
                     await startCamera();
@@ -280,6 +299,7 @@
             }
         }
 
+        // 请求指南针权限
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
                 if (!hasCompassError) {
@@ -290,6 +310,7 @@
             }
 
             try {
+                // iOS Safari 特殊处理
                 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState !== 'granted') {
@@ -301,10 +322,12 @@
                     }
                 }
 
+                // 绑定指南针监听器
                 compassEventListener = function updateCompass(event) {
                     const alpha = event.alpha || 0;
                     let adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
                     
+                    // 计算最短旋转路径
                     const angleDiff = adjustedAngle - lastAdjustedAngle;
                     if (angleDiff > 180) {
                         adjustedAngle -= 360;
@@ -313,14 +336,17 @@
                     }
                     
                     lastAdjustedAngle = adjustedAngle;
+                    // 更新箭头旋转
                     document.querySelector('.compass-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     document.querySelector('.camera-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    // 更新度数显示
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
                 };
                 window.addEventListener("deviceorientation", compassEventListener);
 
+                // 添加旋转提示 - 仅添加一次
                 if (!hasCompassError && !rotationHintAdded) {
                     document.getElementById('errorContainer').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
                     rotationHintAdded = true;
@@ -337,6 +363,7 @@
             }
         }
 
+        // 启动摄像头
         async function startCamera() {
             if (!("mediaDevices" in navigator) || !("getUserMedia" in navigator.mediaDevices)) {
                 if (!hasCameraError) {
@@ -347,9 +374,10 @@
             }
 
             try {
+                // 尝试获取摄像头流
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
-                        facingMode: 'environment',
+                        facingMode: 'environment', // 优先使用后置摄像头
                         width: { ideal: 300 },
                         height: { ideal: 300 }
                     } 
@@ -358,6 +386,7 @@
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
                 
+                // 摄像头成功启动，清除任何之前的错误提示
                 hasCameraError = false;
                 return true;
                 
@@ -367,6 +396,7 @@
                 if (!hasCameraError) {
                     let errorMessage = '<p class="permission-prompt">Camera access is required. Please allow camera permissions.</p>';
                     
+                    // 根据错误类型提供更具体的信息
                     if (error.name === 'NotAllowedError') {
                         errorMessage = '<p class="permission-prompt">Camera permission denied. Please enable camera access in your browser settings.</p>';
                     } else if (error.name === 'NotFoundError') {
@@ -382,17 +412,20 @@
             }
         }
 
+        // 页面卸载时清理资源
         window.addEventListener('beforeunload', () => {
             if (compassEventListener) {
                 window.removeEventListener("deviceorientation", compassEventListener);
             }
             
+            // 停止摄像头流
             const videoElement = document.getElementById('video');
             if (videoElement.srcObject) {
                 videoElement.srcObject.getTracks().forEach(track => track.stop());
             }
         });
 
+        // Web Share API 分享功能
         async function shareSite() {
             try {
                 await navigator.share({
