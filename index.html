@@ -177,7 +177,7 @@
             text-align: left;
             padding-left: 10%;
         }
-        .lunar-mansion {
+        .cosmic-code {
             font-style: italic;
             color: #4b5563;
         }
@@ -313,23 +313,23 @@
                     return;
                 }
 
-                let lunarMansionHtml = '';
-                if (data.lunar_mansion && data.lunar_mansion_description) {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
-                        <p class="lunar-mansion">${data.lunar_mansion_description}</p>
+                let mysticDescriptionHtml = '';
+                if (data.mystic_description) {
+                    mysticDescriptionHtml = `
+                        <p><b>Cosmic Code and Your Mission:</b></p>
+                        <p class="cosmic-code">${data.mystic_description}</p>
                     `;
                 } else {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> Not available</p>
-                        <p class="lunar-mansion">Could not calculate lunar mansion for this date.</p>
+                    mysticDescriptionHtml = `
+                        <p><b>Cosmic Code and Your Mission:</b></p>
+                        <p class="cosmic-code">Could not calculate your cosmic code for this date.</p>
                     `;
                 }
 
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date || 'Not available'}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi || 'Not available'}</p>
-                    ${lunarMansionHtml}
+                    ${mysticDescriptionHtml}
                     <p><b>Lucky Angle:</b> ${data.angle || 'Not available'}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
