@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +19,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <style>
+        /* 保持原有样式不变 */
         body {
             background-color: #f3f4f6;
             font-family: Arial, sans-serif;
@@ -177,7 +177,7 @@
             text-align: left;
             padding-left: 10%;
         }
-        .lunar-mansion {
+        .cosmic-code {
             font-style: italic;
             color: #4b5563;
         }
@@ -274,30 +274,27 @@
             const minute = document.getElementById('minute').value ? parseInt(document.getElementById('minute').value) : null;
             const timezone = document.getElementById('timezone').value;
 
-            // 验证基本输入
             if (!year || !month || !day || year < 1900 || year > 2025 || month < 1 || month > 12 || day < 1 || day > 31) {
                 alert("Please enter a valid birth date (Year: 1900-2025, Month: 1-12, Day: 1-31).");
                 return;
             }
 
-            // 验证月份天数
-            function isValidDate(year, month, day) {
-                const date = new Date(year, month - 1, day);
-                if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
-                    return false;
-                }
-                if (month === 2) {
-                    const isLeapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-                    return isLeapYear ? day <= 29 : day <= 28;
-                }
-                if ([4, 6, 9, 11].includes(month)) {
-                    return day <= 30;
-                }
-                return true;
+            if (hour !== null && (hour < 0 || hour > 23)) {
+                alert("Please enter a valid hour (0-23) or leave it blank.");
+                return;
+            }
+            if (minute !== null && (minute < 0 || minute > 59)) {
+                alert("Please enter a valid minute (0-59) or leave it blank.");
+                return;
             }
 
-            if (!isValidDate(year, month, day)) {
-                alert("Invalid date. Check your input (e.g., February has 28 or 29 days, April has 30 days).");
+            try {
+                const testDate = new Date(year, month - 1, day);
+                if (testDate.getFullYear() !== year || testDate.getMonth() + 1 !== month || testDate.getDate() !== day) {
+                    throw new Error("Invalid date.");
+                }
+            } catch (e) {
+                alert("Invalid date. Check your input (e.g., February has 28 or 29 days).");
                 return;
             }
 
@@ -316,23 +313,23 @@
                     return;
                 }
 
-                let lunarMansionHtml = '';
-                if (data.lunar_mansion && data.lunar_mansion_description) {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
-                        <p class="lunar-mansion">${data.lunar_mansion_description}</p>
+                let mysticDescriptionHtml = '';
+                if (data.mystic_description) {
+                    mysticDescriptionHtml = `
+                        <p><b>Cosmic Code and Your Mission:</b></p>
+                        <p class="cosmic-code">${data.mystic_description}</p>
                     `;
                 } else {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> Not available</p>
-                        <p class="lunar-mansion">Could not calculate lunar mansion for this date.</p>
+                    mysticDescriptionHtml = `
+                        <p><b>Cosmic Code and Your Mission:</b></p>
+                        <p class="cosmic-code">Could not calculate your cosmic code for this date.</p>
                     `;
                 }
 
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date || 'Not available'}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi || 'Not available'}</p>
-                    ${lunarMansionHtml}
+                    ${mysticDescriptionHtml}
                     <p><b>Lucky Angle:</b> ${data.angle || 'Not available'}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
@@ -455,4 +452,3 @@
     </script>
 </body>
 </html>
-```
