@@ -19,7 +19,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <style>
-        /* 保持原有样式不变 */
         body {
             background-color: #f3f4f6;
             font-family: Arial, sans-serif;
@@ -177,10 +176,6 @@
             text-align: left;
             padding-left: 10%;
         }
-        .lunar-mansion {
-            font-style: italic;
-            color: #4b5563;
-        }
     </style>
 </head>
 <body>
@@ -197,7 +192,6 @@
     <input type="number" id="minute" placeholder="Minute (0-59, optional)" min="0" max="59">
     <p class="optional-field">* Minute is optional - if unknown, leave blank</p>
     <select id="timezone">
-        <!-- 保持原有时区选项不变 -->
         <option value="-12">UTC-12:00 (Baker Island)</option>
         <option value="-11">UTC-11:00 (Samoa)</option>
         <option value="-10">UTC-10:00 (Hawaii)</option>
@@ -242,7 +236,6 @@
     <div id="results"></div>
 
     <div id="compass">
-        <!-- 指南针箭头和LUCKY文字容器 -->
         <div class="compass-needle-container">
             <div class="needle">↑</div>
             <div class="lucky-text">LUCKY</div>
@@ -254,7 +247,6 @@
     <div id="camera">
         <video id="video" autoplay playsinline></video>
         <div id="overlay">
-            <!-- 摄像头箭头和LUCKY文字容器 -->
             <div class="camera-needle-container">
                 <div class="camera-needle">↑</div>
                 <div class="camera-lucky-text">LUCKY</div>
@@ -265,7 +257,6 @@
     <button id="installButton" style="display: none;">Install App</button>
 
     <script>
-        // 页面加载时检查是否为HTTPS，如果不是则跳转
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
@@ -278,13 +269,11 @@
             const minute = document.getElementById('minute').value ? parseInt(document.getElementById('minute').value) : null;
             const timezone = document.getElementById('timezone').value;
 
-            // 输入验证 - 核心字段必须填写
             if (!year || !month || !day || year < 1900 || year > 2025 || month < 1 || month > 12 || day < 1 || day > 31) {
                 alert("Please enter a valid birth date (Year: 1900-2025, Month: 1-12, Day: 1-31).");
                 return;
             }
 
-            // 时间字段验证（如果填写）
             if (hour !== null && (hour < 0 || hour > 23)) {
                 alert("Please enter a valid hour (0-23) or leave it blank.");
                 return;
@@ -305,50 +294,31 @@
             }
 
             try {
-                // 构建查询参数
                 let queryParams = `year=${year}&month=${month}&day=${day}&timezone=${timezone}`;
                 if (hour !== null) queryParams += `&hour=${hour}`;
                 if (minute !== null) queryParams += `&minute=${minute}`;
                 
-                // 调用后端API
                 const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?${queryParams}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
-                console.log('API Response:', data); // 调试日志
+                console.log('API Response:', data);
 
                 if (data.error) {
                     alert(`Calculation failed: ${data.error}`);
                     return;
                 }
 
-                // 显示结果，包含28星宿信息，并增加错误处理
-                let lunarMansionHtml = '';
-                if (data.lunar_mansion && data.lunar_mansion_description) {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> ${data.lunar_mansion}</p>
-                        <p class="lunar-mansion">${data.lunar_mansion_description}</p>
-                    `;
-                } else {
-                    lunarMansionHtml = `
-                        <p><b>Lunar Mansion:</b> Not available</p>
-                        <p class="lunar-mansion">Could not calculate lunar mansion for this date.</p>
-                    `;
-                }
-
                 document.getElementById('results').innerHTML = `
                     <p><b>Chinese Lunar Date:</b> ${data.lunar_date || 'Not available'}</p>
                     <p><b>Your Destiny Code (BaZi):</b> ${data.bazi || 'Not available'}</p>
-                    ${lunarMansionHtml}
                     <p><b>Lucky Angle:</b> ${data.angle || 'Not available'}°</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
                 `;
 
                 const joyAngle = data.angle || 0;
                 
-                // 启动指南针
                 if ("DeviceOrientationEvent" in window) {
                     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                        // iOS设备需要单独请求权限
                         try {
                             const permissionState = await DeviceOrientationEvent.requestPermission();
                             if (permissionState === 'granted') {
@@ -361,7 +331,6 @@
                             document.getElementById('results').innerHTML += `<p>Compass error: ${err.message}</p>`;
                         }
                     } else {
-                        // 安卓设备直接使用
                         window.addEventListener("deviceorientation", updateCompass);
                         document.getElementById('results').innerHTML += `<p>Rotate your phone to align with the LUCKY marker!</p>`;
                     }
@@ -369,24 +338,19 @@
                     document.getElementById('results').innerHTML += `<p>Compass not supported on this device. Use a phone with a compass sensor.</p>`;
                 }
 
-                // 指南针更新函数
                 function updateCompass(event) {
                     const alpha = event.alpha || 0;
-                    // 计算调整后的角度，使箭头始终指向幸运方向
                     const adjustedAngle = (360 - alpha + joyAngle) % 360;
                     
-                    // 更新指南针箭头和LUCKY文字（作为一个整体旋转）
                     document.querySelector('.compass-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     
-                    // 更新摄像头箭头和LUCKY文字（作为一个整体旋转）
                     document.querySelector('.camera-needle-container').style.transform = 
                         `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     
                     document.getElementById('degree').textContent = `Current Angle: ${Math.round(alpha)}° | Lucky Angle: ${joyAngle}°`;
                 }
 
-                // 启动摄像头
                 startCamera();
 
             } catch (error) {
@@ -395,14 +359,12 @@
             }
         }
 
-        // 摄像头启动函数
         async function startCamera() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 document.getElementById('results').innerHTML += `<p>Camera not supported on this device.</p>`;
                 return;
             }
 
-            // 手机摄像头配置：优先后置摄像头
             const constraints = {
                 video: {
                     facingMode: { ideal: 'environment' },
@@ -417,7 +379,6 @@
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
                 
-                // 视频播放错误处理
                 videoElement.onerror = function(error) {
                     stream.getTracks().forEach(track => track.stop());
                     console.error('Video error:', error);
@@ -442,7 +403,6 @@
             }
         }
 
-        // PWA 安装功能
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -463,7 +423,6 @@
             }
         }
 
-        // 页面加载后绑定按钮事件
         document.addEventListener('DOMContentLoaded', function() {
             const calculateBtn = document.getElementById('calculateBtn');
             if (calculateBtn) {
