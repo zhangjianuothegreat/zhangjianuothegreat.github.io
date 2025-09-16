@@ -160,6 +160,133 @@
     </div>
 
     <script>
+        // 28星宿查询表 - 公历版
+        const LUNAR_MANSIONS = [
+            ["虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿"],
+            ["危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿"],
+            ["室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿"],
+            ["壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿"],
+            ["奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿"],
+            ["娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿"],
+            ["胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿"],
+            ["昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿"],
+            ["毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿"],
+            ["觜宿", "参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿"],
+            ["参宿", "井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿"],
+            ["井宿", "鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿"],
+            ["鬼宿", "柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿"],
+            ["柳宿", "星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿"],
+            ["星宿", "张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿"],
+            ["张宿", "翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿"],
+            ["翼宿", "轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿"],
+            ["轸宿", "角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿"],
+            ["角宿", "亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿"],
+            ["亢宿", "氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿"],
+            ["氐宿", "房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿"],
+            ["房宿", "心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿"],
+            ["心宿", "尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿"],
+            ["尾宿", "箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿"],
+            ["箕宿", "斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿"],
+            ["斗宿", "牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿"],
+            ["牛宿", "女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿"],
+            ["女宿", "虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿"],
+            ["虚宿", "危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿"],
+            ["危宿", "室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿"],
+            ["室宿", "壁宿", "奎宿", "娄宿", "胃宿", "昴宿", "毕宿", "觜宿", "参宿", "井宿", "鬼宿", "柳宿"]
+        ];
+
+        // 星宿名称到英文翻译的映射
+        const CONSTELLATION_TRANSLATIONS = {
+            '角宿': 'The Horn', '亢宿': 'The Neck', '氐宿': 'The Root',
+            '房宿': 'The Room', '心宿': 'The Heart', '尾宿': 'The Tail',
+            '箕宿': 'The Winnowing Basket', '斗宿': 'The Dipper', '牛宿': 'The Ox',
+            '女宿': 'The Girl', '虚宿': 'The Void', '危宿': 'The Rooftop',
+            '室宿': 'The Encampment', '壁宿': 'The Wall', '奎宿': 'The Legs',
+            '娄宿': 'The Bond', '胃宿': 'The Stomach', '昴宿': 'The Pleiades',
+            '毕宿': 'The Net', '觜宿': 'The Beak', '参宿': 'The Three Stars',
+            '井宿': 'The Well', '鬼宿': 'The Ghost', '柳宿': 'The Willow',
+            '星宿': 'The Star', '张宿': 'The Extended Net', '翼宿': 'The Wings',
+            '轸宿': 'The Chariot'
+        };
+
+        // 验证日期格式并返回规范化后的 YYYY-MM-DD 格式
+        function validateDate(dateStr) {
+            try {
+                // 支持 YYYYMMDD 或 YYYY-MM-DD
+                if (/^\d{8}$/.test(dateStr)) {
+                    dateStr = `${dateStr.slice(0,4)}-${dateStr.slice(4,6)}-${dateStr.slice(6)}`;
+                }
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    console.error(`Invalid date format: ${dateStr}`);
+                    return null;
+                }
+
+                const [year, month, day] = dateStr.split('-').map(Number);
+                // 验证日期有效性
+                const date = new Date(year, month - 1, day);
+                if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
+                    throw new Error("Invalid date");
+                }
+                return dateStr;
+            } catch (e) {
+                console.error(`Invalid date: ${dateStr}, error: ${e.message}`);
+                return null;
+            }
+        }
+
+        // 对于无效日期，返回一个基于哈希的确定性星宿
+        function getFallbackMansion(dateStr) {
+            // 使用简单哈希确保一致性
+            let hash = 0;
+            for (let i = 0; i < dateStr.length; i++) {
+                const char = dateStr.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            const mansionIndex = Math.abs(hash) % 28;
+            const mansionName = Object.keys(CONSTELLATION_TRANSLATIONS)[mansionIndex];
+            console.warn(`Using fallback mansion for ${dateStr}: ${mansionName}`);
+            return mansionName;
+        }
+
+        // 根据公历日期返回对应的 28 星宿名称（中文和英文）
+        function getLunarMansion(dateStr) {
+            // 验证日期
+            const normalizedDate = validateDate(dateStr);
+            if (!normalizedDate) {
+                const mansion = getFallbackMansion(dateStr);
+                return [mansion, CONSTELLATION_TRANSLATIONS[mansion] || mansion];
+            }
+
+            try {
+                // 解析日期
+                const [year, month, day] = normalizedDate.split('-').map(Number);
+                // 月份从 1 开始，转换为 0-based 索引
+                const monthIdx = month - 1;
+                // 日期从 1 开始，转换为 0-based 索引
+                const dayIdx = day - 1;
+
+                // 检查月份和日期范围
+                if (monthIdx < 0 || monthIdx > 11 || dayIdx < 0 || dayIdx > 30) {
+                    console.error(`Out of range: month=${month}, day=${day}`);
+                    const mansion = getFallbackMansion(dateStr);
+                    return [mansion, CONSTELLATION_TRANSLATIONS[mansion] || mansion];
+                }
+
+                // 获取星宿（中文）
+                const mansion = LUNAR_MANSIONS[dayIdx][monthIdx];
+                // 获取英文翻译
+                const translatedMansion = CONSTELLATION_TRANSLATIONS[mansion] || mansion;
+                console.debug(`Date: ${dateStr}, Month: ${month}, Day: ${day}, Mansion: ${mansion}, Translated: ${translatedMansion}`);
+                return [mansion, translatedMansion];
+
+            } catch (e) {
+                console.error(`Error processing date ${dateStr}: ${e.message}`);
+                const mansion = getFallbackMansion(dateStr);
+                return [mansion, CONSTELLATION_TRANSLATIONS[mansion] || mansion];
+            }
+        }
+
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
@@ -259,10 +386,15 @@
 
                 const baziAttributes = data.bazi || 'Unable to calculate BaZi attributes';
                 
+                // 计算28星宿
+                const birthDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const [lunarMansion, lunarMansionEn] = getLunarMansion(birthDateStr);
+                
                 document.getElementById('results').innerHTML = `
                     <div id="errorContainer"></div>
                     <p><b>Your Cosmic Calendar:</b> ${data.lunar_date || 'Unable to calculate lunar date'}</p>
                     <p><b>Your Destiny Blueprint (BaZi):</b> ${baziAttributes}</p>
+                    <p><b>Your 28 Constellation:</b> ${lunarMansion} (${lunarMansionEn})</p>
                     <p><b>Your Constellation:</b> ${data.constellation || 'Unable to calculate constellation'} - ${data.constellation_description || 'No description available'}</p>
                     <p><b>Your Lucky Degree:</b> ${data.angle !== undefined ? data.angle + '°' : 'Unable to calculate lucky degree'}</p>
                     <p class="mindfulness">Face your lucky direction, take a deep breath, and let mindfulness open new doors. Small calm moments can bring big luck—try it in your lucky city from the matching feature for a fresh start!</p>
