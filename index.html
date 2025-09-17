@@ -3,285 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self' 'unsafe-inline'; 
+        connect-src https://lucky-compass-backend.fly.dev; 
+        media-src 'self' blob:; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+    ">
     <title>Lucky Direction Compass</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        header {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            transition: background 0.3s;
-        }
-        nav a:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        h1 {
-            color: white;
-            margin: 0;
-        }
-        .subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            margin: 0.5rem 0;
-        }
-        .container {
-            max-width: 600px;
-            width: 90%;
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            margin: 1rem;
-        }
-        form {
-            display: grid;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        label {
-            font-weight: bold;
-            color: #555;
-        }
-        input, select {
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 1rem;
-        }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            transform: scale(1.05);
-        }
-        .permissions {
-            background: #f0f8ff;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        .compass-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 2rem auto;
-            border-radius: 50%;
-            background: #f8f9fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-        .compass {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff6b6b);
-            transform: rotate(0deg);
-        }
-        .needle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 2px;
-            height: 120px;
-            background: #333;
-            transform-origin: bottom center;
-            transform: translate(-50%, -100%);
-        }
-        .lucky-marker {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            background: gold;
-            border-radius: 50%;
-            box-shadow: 0 0 10px gold;
-        }
-        .directions {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-        }
-        .direction {
-            font-weight: bold;
-            color: #333;
-            transform: rotate(-90deg);
-        }
-        .result {
-            text-align: center;
-            margin-top: 2rem;
-            line-height: 1.6;
-        }
-        .result h2 {
-            color: #667eea;
-        }
-        .mindfulness {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-top: 1rem;
-            font-style: italic;
-            color: #555;
-        }
-        .install-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 20px;
-            cursor: pointer;
-            margin-top: 1rem;
-            font-size: 1rem;
-        }
-        .footer {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: auto;
-            padding: 1rem;
-        }
-        @media (max-width: 600px) {
-            .compass-container {
-                width: 250px;
-                height: 250px;
-            }
-            .compass {
-                width: 200px;
-                height: 200px;
-            }
-        }
-    </style>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
+    <!-- 引入Roboto字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入GitHub仓库中的CSS -->
+    <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
     <header>
         <h1>Lucky Direction Compass</h1>
-        <p class="subtitle">Discover your personal lucky direction based on Chinese astrology</p>
-        <nav>
-            <a href="https://www.yourluckycompass.com/">Home</a>
-            <a href="https://www.yourluckycompass.com/bazi">Bazi Reading</a>
-            <a href="https://www.yourluckycompass.com/lucky-city">Lucky City Match</a>
-            <a href="#">Lucky Compass</a>
-            <a href="https://www.yourluckycompass.com/sound-bath">Sound Bath</a>
-        </nav>
+        <p>Discover your personal lucky direction based on Chinese astrology</p>
     </header>
 
-    <div class="container">
-        <form id="birthForm">
-            <label for="year">Year:</label>
-            <input type="number" id="year" required min="1900" max="2025">
+    <nav>
+        <div class="container">
+            <a href="https://www.yourluckycompass.com/" class="text-white hover:underline">Home</a>
+            <a href="https://www.yourluckycompass.com/bazi" class="text-white hover:underline">Bazi Reading</a>
+            <a href="https://www.yourluckycompass.com/lucky-city" class="text-white hover:underline">Lucky City Match</a>
+            <a href="#" class="text-white hover:underline font-bold">Lucky Compass</a>
+            <a href="https://www.yourluckycompass.com/sound-bath" class="text-white hover:underline">Sound Bath</a>
+        </div>
+    </nav>
 
-            <label for="month">Month:</label>
-            <input type="number" id="month" required min="1" max="12">
-
-            <label for="day">Day:</label>
-            <input type="number" id="day" required min="1" max="31">
-
-            <label for="hour">Hour (optional):</label>
-            <input type="number" id="hour" min="0" max="23">
-
-            <label for="minute">Minute (optional):</label>
-            <input type="number" id="minute" min="0" max="59">
-
-            <label for="timezone">Timezone:</label>
+    <section>
+        <div class="card">
+            <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
+            <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required>
+            <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required>
+            
+            <input type="number" id="hour" placeholder="Hour (0-23, optional)" min="0" max="23">
+            <p class="optional-field">* Hour is optional - leave blank if unknown</p>
+            <input type="number" id="minute" placeholder="Minute (0-59, optional)" min="0" max="59">
+            <p class="optional-field">* Minute is optional - leave blank if unknown</p>
+            
             <select id="timezone">
                 <option value="-12">UTC-12:00 (Baker Island)</option>
                 <option value="-11">UTC-11:00 (Samoa)</option>
                 <option value="-10">UTC-10:00 (Hawaii)</option>
-                <option value="-8">UTC-08:00 (Pacific Time)</option>
+                <option value="-8" selected>UTC-08:00 (Pacific Time)</option>
                 <option value="0">UTC+00:00 (London)</option>
-                <option value="8" selected>UTC+08:00 (Beijing, Singapore)</option>
+                <option value="8">UTC+08:00 (Beijing, Singapore)</option>
+                <!-- 补充完整时区列表 -->
             </select>
-
-            <button type="submit">Find My Lucky Direction</button>
-        </form>
-
-        <div class="permissions" id="permissions" style="display: none;">
-            To use all features, please allow camera and compass access when prompted.<br>
-            For iOS users: Go to Settings → Safari → Enable "Motion & Orientation Access" for this site<br>
-            <button onclick="requestPermissions()">Enable Permissions</button>
+            
+            <button id="calculateBtn">Find My Lucky Direction</button>
         </div>
 
-        <div class="result" id="result" style="display: none;">
-            <h2 id="cosmicCalendar"></h2>
-            <p><strong>Your Destiny Blueprint (BaZi):</strong> <span id="bazi"></span></p>
-            <p><strong>Your Inner Spark:</strong> <span id="personality"></span></p>
-            <p><strong>Daily Cosmic Whisper:</strong> <span id="mystic"></span></p>
-            <h3>Your Lucky Degree: <span id="luckyDegree">--°</span></h3>
-            <div class="compass-container">
-                <div class="compass" id="compass">
-                    <div class="needle" id="needle"></div>
-                    <div class="lucky-marker"></div>
-                    <div class="directions">
-                        <div class="direction">N</div>
-                        <div class="direction">E</div>
-                        <div class="direction">S</div>
-                        <div class="direction">W</div>
-                    </div>
+        <div class="card" id="permissionNotice" style="display: none;">
+            <p class="permission-prompt">To use all features, please allow camera and compass access when prompted.</p>
+            <p class="text-sm">For iOS users: Go to Settings → Safari → Enable "Motion & Orientation Access" for this site</p>
+            <button id="permissionButton" class="bg-yellow-500 hover:bg-yellow-600">Enable Permissions</button>
+        </div>
+
+        <div class="card" id="results"></div>
+
+        <div id="directionTitle" class="text-center font-medium text-blue-800">Current / Lucky Direction</div>
+        <div id="degree" class="text-center text-lg my-2">0° / --°</div>
+
+        <!-- 指南针容器 - 修复位置问题 -->
+        <div id="compass">
+            <div class="compass-needle-container">
+                <div class="needle">↑</div>
+                <div class="lucky-text">LUCKY</div>
+            </div>
+        </div>
+
+        <!-- 摄像头容器 - 修复位置问题 -->
+        <div id="camera">
+            <video id="video" autoplay playsinline></video>
+            <div id="overlay">
+                <div class="camera-needle-container">
+                    <div class="needle">↑</div>
+                    <div class="lucky-text">LUCKY</div>
                 </div>
-                <p style="text-align: center; margin-top: 1rem; font-size: 1.2rem;">
-                    Current / Lucky Direction<br>
-                    <span id="currentLucky">0° / --°</span>
-                </p>
-                <p style="text-align: center;">
-                    ↑<br>
-                    <strong>ALIGN HERE FOR HARMONY</strong>
-                </p>
             </div>
-            <div class="mindfulness">
-                <strong>Mindful Alignment:</strong> Your lucky degree is your cosmic key to inner peace! Guided by the stars' gentle wisdom, slowly rotate your phone to align with your cosmic degree. Breathe deeply, feel the subtle harmony of the universe flowing through you, inviting calm and clarity into every moment. Let this alignment anchor you in serene presence, releasing the day's noise for profound tranquility.<br><br>
-                <em>Pro tip: Revisit your Lucky Compass daily—your cosmic key evolves with the stars, deepening your mindfulness practice wherever life takes you!</em>
-            </div>
-            <button class="install-btn" onclick="installApp()">Install App</button>
         </div>
-    </div>
 
-    <footer class="footer">
-        © 2025 Your Lucky Compass | Chinese Astrology Tools
+        <button id="installButton" style="display: none; margin-top: 20px;">Install App</button>
+    </section>
+
+    <footer>
+        <p>© 2025 Your Lucky Compass | Chinese Astrology Tools</p>
     </footer>
 
     <audio id="harmonyAudio" preload="auto" loop></audio>
 
     <script>
-        let audioContext;
+        let compassEventListener = null;
+        let lastAdjustedAngle = 0;
+        let currentJoyAngle = 0;
+        let hasCompassError = false;
+        let hasCameraError = false;
+        let rotationHintAdded = false;
+        let deferredPrompt;
         let isPlaying = false;
         const audioFiles = [
             'sound-bath/audio/Bamboo Whisper.mp3',
@@ -313,125 +139,291 @@
             'sound-bath/audio/Wheat Sway.mp3'
         ];
 
-        function requestPermissions() {
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission().then(permissionState => {
-                    if (permissionState === 'granted') {
-                        initCompass();
+        // 强制HTTPS
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+        }
+
+        async function calculateBazi() {
+            // 获取输入值
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const day = parseInt(document.getElementById('day').value);
+            const hour = document.getElementById('hour').value ? parseInt(document.getElementById('hour').value) : null;
+            const minute = document.getElementById('minute').value ? parseInt(document.getElementById('minute').value) : null;
+            const timezone = document.getElementById('timezone').value;
+
+            // 输入验证
+            if (!year || !month || !day || year < 1900 || year > 2025 || month < 1 || month > 12 || day < 1 || day > 31) {
+                alert("Please enter a valid date (1900-2025)");
+                return;
+            }
+            if (hour !== null && (hour < 0 || hour > 23)) {
+                alert("Hour must be 0-23 or blank");
+                return;
+            }
+            if (minute !== null && (minute < 0 || minute > 59)) {
+                alert("Minute must be 0-59 or blank");
+                return;
+            }
+            try {
+                const testDate = new Date(year, month - 1, day);
+                if (testDate.getFullYear() !== year || testDate.getMonth() + 1 !== month || testDate.getDate() !== day) {
+                    throw new Error();
+                }
+            } catch {
+                alert("Invalid date (e.g., February 30 is invalid)");
+                return;
+            }
+
+            // 调用API
+            try {
+                let queryParams = `year=${year}&month=${month}&day=${day}&timezone=${timezone}`;
+                if (hour !== null) queryParams += `&hour=${hour}`;
+                if (minute !== null) queryParams += `&minute=${minute}`;
+
+                const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?${queryParams}`);
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const data = await response.json();
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                    return;
+                }
+
+                // 显示结果
+                document.getElementById('results').innerHTML = `
+                    <p><b>Your Cosmic Calendar:</b> ${data.solar_date}</p>
+                    <p><b>Your Destiny Blueprint (BaZi):</b> ${data.bazi}</p>
+                    <p><b>Your Inner Spark:</b> ${data.personality}</p>
+                    <p><b>Daily Cosmic Whisper:</b> ${data.mystic_description}</p>
+                    <p><b>Your Lucky Degree:</b> ${data.angle}°</p>
+                    <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
+                        <p><b>Mindful Alignment:</b> Your lucky degree is your cosmic key to inner peace! Guided by the stars' gentle wisdom, slowly rotate your phone to align with your cosmic degree. Breathe deeply, feel the universe's harmony flowing through you, inviting calm and clarity. Let this alignment anchor you in serene presence, releasing daily stress for profound tranquility.</p>
+                        <p><em>Pro tip: Revisit your Lucky Compass daily—your cosmic key evolves with the stars!</em></p>
+                    </div>
+                `;
+
+                currentJoyAngle = data.angle;
+                document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
+                document.getElementById('permissionNotice').style.display = 'block';
+
+                // 清理旧监听器
+                if (compassEventListener) {
+                    window.removeEventListener("deviceorientation", compassEventListener);
+                }
+
+                // 请求权限
+                tryGetPermissions();
+
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<p class="permission-prompt">${error.message}</p>`;
+            }
+        }
+
+        async function tryGetPermissions() {
+            try {
+                const compassGranted = await requestCompassPermission();
+                if (compassGranted) {
+                    await startCamera();
+                }
+            } catch (error) {
+                console.error("Permission error:", error);
+            }
+        }
+
+        async function requestCompassPermission() {
+            if (!("DeviceOrientationEvent" in window)) {
+                showError("Compass not supported on this device");
+                return false;
+            }
+
+            try {
+                // iOS Safari 特殊处理
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    const permissionState = await DeviceOrientationEvent.requestPermission();
+                    if (permissionState !== 'granted') {
+                        showError("Compass permission denied. Go to Settings → Safari → Enable 'Motion & Orientation Access'");
+                        return false;
+                    }
+                }
+
+                // 绑定指南针监听器 - 修复箭头位置计算
+                compassEventListener = function(event) {
+                    const alpha = event.alpha || 0;
+                    // 修复角度计算，确保箭头在指南针范围内
+                    let adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
+                    
+                    // 最短路径旋转优化
+                    const angleDiff = adjustedAngle - lastAdjustedAngle;
+                    if (angleDiff > 180) adjustedAngle -= 360;
+                    else if (angleDiff < -180) adjustedAngle += 360;
+                    
+                    lastAdjustedAngle = adjustedAngle;
+                    
+                    // 应用旋转，确保箭头在容器内
+                    const compassNeedle = document.querySelector('.compass-needle-container');
+                    const cameraNeedle = document.querySelector('.camera-needle-container');
+                    
+                    if (compassNeedle) {
+                        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    }
+                    if (cameraNeedle) {
+                        cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    }
+                    
+                    document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
+
+                    // 播放音效
+                    const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
+                    if (diff <= 10 && !isPlaying) {
+                        playHarmonySound();
+                    } else if (diff > 10 && isPlaying) {
+                        stopHarmonySound();
+                    }
+                };
+                window.addEventListener("deviceorientation", compassEventListener);
+
+                if (!rotationHintAdded) {
+                    showMessage("Rotate your phone to align with the LUCKY marker!");
+                    rotationHintAdded = true;
+                }
+                return true;
+
+            } catch (error) {
+                showError("Failed to access compass. Please enable permissions.");
+                return false;
+            }
+        }
+
+        async function startCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError("Camera not supported");
+                return false;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 300 },
+                        height: { ideal: 300 }
                     }
                 });
-            } else {
-                initCompass();
-            }
-            document.getElementById('permissions').style.display = 'none';
-        }
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+                videoElement.onerror = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                hasCameraError = false;
+                return true;
 
-        function initCompass() {
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', handleOrientation);
-            }
-        }
-
-        function handleOrientation(event) {
-            const alpha = event.alpha ? Math.round(event.alpha) : 0;
-            document.getElementById('currentLucky').textContent = `${alpha}° / ${document.getElementById('luckyDegree').textContent}`;
-            const needle = document.getElementById('needle');
-            needle.style.transform = `translate(-50%, -100%) rotate(${alpha}deg)`;
-
-            const luckyDegree = parseFloat(document.getElementById('luckyDegree').textContent);
-            if (!isNaN(luckyDegree)) {
-                const diff = Math.min(Math.abs(alpha - luckyDegree), 360 - Math.abs(alpha - luckyDegree));
-                if (diff <= 10) {  // Within 10 degrees
-                    if (!isPlaying) {
-                        playHarmonySound();
-                    }
-                } else {
-                    stopHarmonySound();
+            } catch (error) {
+                let msg = "Camera access failed. Please enable permissions.";
+                if (error.name === 'NotAllowedError') {
+                    msg = "Camera permission denied. Check browser settings.";
+                } else if (error.name === 'NotFoundError') {
+                    msg = "No camera found on this device.";
                 }
+                showError(msg);
+                return false;
             }
         }
 
+        // 工具函数
+        function showError(message) {
+            const results = document.getElementById('results');
+            const existingError = document.getElementById('errorContainer');
+            
+            if (existingError) {
+                existingError.textContent = message;
+            } else {
+                results.innerHTML += `<div id="errorContainer" class="permission-prompt">${message}</div>`;
+            }
+        }
+
+        function showMessage(message) {
+            document.getElementById('results').innerHTML += `<p>${message}</p>`;
+        }
+
+        // 音效播放
         function playHarmonySound() {
             if (isPlaying) return;
             const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-            const audio = new Audio(randomAudio);
-            audio.loop = true;
+            const audio = document.getElementById('harmonyAudio');
+            audio.src = randomAudio;
             audio.volume = 0.3;
             audio.play().then(() => {
                 isPlaying = true;
-                audioContext = audio;
             }).catch(e => console.log('Audio play failed:', e));
         }
 
         function stopHarmonySound() {
-            if (isPlaying && audioContext) {
-                audioContext.pause();
-                audioContext = null;
+            if (isPlaying) {
+                const audio = document.getElementById('harmonyAudio');
+                audio.pause();
+                audio.currentTime = 0;
                 isPlaying = false;
             }
         }
 
-        // Persist audio across pages (using sessionStorage)
+        // 页面切换时保持音效
         window.addEventListener('beforeunload', () => {
-            if (isPlaying) {
+            if (isPlaying && !window.location.pathname.includes('sound-bath')) {
                 sessionStorage.setItem('harmonyPlaying', 'true');
-                sessionStorage.setItem('harmonySrc', audioContext ? audioContext.src : '');
+                sessionStorage.setItem('harmonySrc', document.getElementById('harmonyAudio').src);
             } else {
                 sessionStorage.removeItem('harmonyPlaying');
+                sessionStorage.removeItem('harmonySrc');
             }
         });
 
         window.addEventListener('load', () => {
-            if (sessionStorage.getItem('harmonyPlaying') === 'true') {
+            if (sessionStorage.getItem('harmonyPlaying') === 'true' && !window.location.pathname.includes('sound-bath')) {
                 const src = sessionStorage.getItem('harmonySrc');
                 if (src) {
-                    const audio = new Audio(src);
-                    audio.loop = true;
+                    const audio = document.getElementById('harmonyAudio');
+                    audio.src = src;
                     audio.volume = 0.3;
                     audio.play().then(() => {
                         isPlaying = true;
-                        audioContext = audio;
-                    });
+                    }).catch(e => console.log('Audio play failed:', e));
                 }
             }
         });
 
-        document.getElementById('birthForm').addEventListener('submit', async (e) => {
+        // 页面清理
+        window.addEventListener('beforeunload', () => {
+            if (compassEventListener) {
+                window.removeEventListener("deviceorientation", compassEventListener);
+            }
+            const video = document.getElementById('video');
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // PWA安装
+        window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            const formData = new FormData(e.target);
-            const params = new URLSearchParams();
-            for (const [key, value] of formData) {
-                params.append(key, value);
-            }
+            deferredPrompt = e;
+            document.getElementById('installButton').style.display = 'block';
+        });
 
-            try {
-                const response = await fetch(`/calculate?${params}`);
-                const data = await response.json();
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-
-                document.getElementById('cosmicCalendar').textContent = `Your Cosmic Calendar: ${data.solar_date}`;
-                document.getElementById('bazi').textContent = data.bazi;
-                document.getElementById('personality').textContent = data.personality;
-                document.getElementById('mystic').textContent = data.mystic_description;
-                document.getElementById('luckyDegree').textContent = data.angle;
-
-                document.getElementById('result').style.display = 'block';
-                document.getElementById('permissions').style.display = 'block';
-                requestPermissions();
-            } catch (error) {
-                alert('Calculation failed: ' + error.message);
+        document.getElementById('installButton').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('App installed');
+                    }
+                    deferredPrompt = null;
+                });
             }
         });
 
-        function installApp() {
-            if ('serviceWorker' in navigator && 'PushManager' in window) {
-                // Placeholder for PWA install
-                alert('PWA installation prompt would appear here. Check your browser console for details.');
-            }
-        }
+        // 事件绑定
+        document.getElementById('calculateBtn').addEventListener('click', calculateBazi);
+        document.getElementById('permissionButton').addEventListener('click', tryGetPermissions);
     </script>
 </body>
 </html>
