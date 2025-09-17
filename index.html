@@ -9,139 +9,92 @@
         script-src 'self' 'unsafe-inline'; 
         connect-src https://lucky-compass-backend.fly.dev; 
         media-src 'self' blob:; 
-        style-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
     ">
     <title>Lucky Direction Compass</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
+    <!-- 引入Roboto字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #f3f4f6;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #1e3a8a;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #1e40af;
-        }
-        #compass, #camera {
-            width: 280px;
-            height: 280px;
-            margin: 20px auto;
-            border-radius: 50%;
-            position: relative;
-        }
-        .needle {
-            color: red;
-            font-size: 36px;
-        }
-        .permission-prompt {
-            color: #dc2626;
-            padding: 10px;
-            background: #fee2e2;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .optional-field {
-            font-size: 12px;
-            color: #666;
-            margin-top: -6px;
-        }
-    </style>
+    <!-- 引入GitHub仓库中的CSS -->
+    <link rel="stylesheet" href="static/styles.css">
 </head>
-<body class="container">
-    <nav class="bg-white shadow-md p-4 mb-6">
-        <div class="flex justify-center space-x-4">
-            <a href="#" class="text-blue-600 hover:underline">Home</a>
-            <a href="#" class="text-blue-600 hover:underline">Bazi Reading</a>
-            <a href="#" class="text-blue-600 hover:underline font-bold">Lucky Compass</a>
+<body>
+    <header>
+        <h1>Lucky Direction Compass</h1>
+        <p>Discover your personal lucky direction based on Chinese astrology</p>
+    </header>
+
+    <nav>
+        <div class="container">
+            <a href="#" class="text-white hover:underline">Home</a>
+            <a href="#" class="text-white hover:underline">Bazi Reading</a>
+            <a href="#" class="text-white hover:underline font-bold">Lucky Compass</a>
         </div>
     </nav>
 
-    <div class="card">
-        <h1 class="text-2xl font-bold text-center mb-4">Find Your Lucky Direction</h1>
-        <p class="text-center mb-6">Discover your personal lucky direction based on Chinese astrology</p>
-        
-        <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
-        <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required>
-        <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required>
-        
-        <input type="number" id="hour" placeholder="Hour (0-23, optional)" min="0" max="23">
-        <p class="optional-field">* Hour is optional - leave blank if unknown</p>
-        <input type="number" id="minute" placeholder="Minute (0-59, optional)" min="0" max="59">
-        <p class="optional-field">* Minute is optional - leave blank if unknown</p>
-        
-        <select id="timezone">
-            <option value="-12">UTC-12:00 (Baker Island)</option>
-            <option value="-11">UTC-11:00 (Samoa)</option>
-            <option value="-10">UTC-10:00 (Hawaii)</option>
-            <option value="-8" selected>UTC-08:00 (Pacific Time)</option>
-            <option value="0">UTC+00:00 (London)</option>
-            <option value="8">UTC+08:00 (Beijing, Singapore)</option>
-            <!-- 补充完整时区列表 -->
-        </select>
-        
-        <button id="calculateBtn">Find My Lucky Direction</button>
-    </div>
-
-    <div class="card" id="permissionNotice" style="display: none;">
-        <p class="permission-prompt">To use all features, please allow camera and compass access when prompted.</p>
-        <p class="text-sm">For iOS users: Go to Settings → Safari → Enable "Motion & Orientation Access" for this site</p>
-        <button id="permissionButton" class="bg-yellow-500 hover:bg-yellow-600">Enable Permissions</button>
-    </div>
-
-    <div class="card" id="results"></div>
-
-    <div id="directionTitle" class="text-center font-medium text-blue-800">Current / Lucky Direction</div>
-    <div id="degree" class="text-center text-lg my-2">0° / --°</div>
-
-    <div id="compass" class="border-2 border-blue-800 bg-white">
-        <div class="compass-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300">
-            <div class="needle">↑</div>
-            <div class="lucky-text text-yellow-600 font-bold">LUCKY</div>
+    <section>
+        <div class="card">
+            <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
+            <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required>
+            <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required>
+            
+            <input type="number" id="hour" placeholder="Hour (0-23, optional)" min="0" max="23">
+            <p class="optional-field">* Hour is optional - leave blank if unknown</p>
+            <input type="number" id="minute" placeholder="Minute (0-59, optional)" min="0" max="59">
+            <p class="optional-field">* Minute is optional - leave blank if unknown</p>
+            
+            <select id="timezone">
+                <option value="-12">UTC-12:00 (Baker Island)</option>
+                <option value="-11">UTC-11:00 (Samoa)</option>
+                <option value="-10">UTC-10:00 (Hawaii)</option>
+                <option value="-8" selected>UTC-08:00 (Pacific Time)</option>
+                <option value="0">UTC+00:00 (London)</option>
+                <option value="8">UTC+08:00 (Beijing, Singapore)</option>
+                <!-- 补充完整时区列表 -->
+            </select>
+            
+            <button id="calculateBtn">Find My Lucky Direction</button>
         </div>
-    </div>
 
-    <div id="camera" class="border-2 border-blue-800 bg-black overflow-hidden">
-        <video id="video" autoplay playsinline></video>
-        <div id="overlay" class="absolute inset-0 pointer-events-none">
-            <div class="camera-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300">
+        <div class="card" id="permissionNotice" style="display: none;">
+            <p class="permission-prompt">To use all features, please allow camera and compass access when prompted.</p>
+            <p class="text-sm">For iOS users: Go to Settings → Safari → Enable "Motion & Orientation Access" for this site</p>
+            <button id="permissionButton" class="bg-yellow-500 hover:bg-yellow-600">Enable Permissions</button>
+        </div>
+
+        <div class="card" id="results"></div>
+
+        <div id="directionTitle" class="text-center font-medium text-blue-800">Current / Lucky Direction</div>
+        <div id="degree" class="text-center text-lg my-2">0° / --°</div>
+
+        <!-- 指南针容器 - 修复位置问题 -->
+        <div id="compass">
+            <div class="compass-needle-container">
                 <div class="needle">↑</div>
-                <div class="lucky-text text-yellow-600 font-bold">LUCKY</div>
+                <div class="lucky-text">LUCKY</div>
             </div>
         </div>
-    </div>
 
-    <button id="installButton" style="display: none; margin-top: 20px;">Install App</button>
+        <!-- 摄像头容器 - 修复位置问题 -->
+        <div id="camera">
+            <video id="video" autoplay playsinline></video>
+            <div id="overlay">
+                <div class="camera-needle-container">
+                    <div class="needle">↑</div>
+                    <div class="lucky-text">LUCKY</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="installButton" style="display: none; margin-top: 20px;">Install App</button>
+    </section>
+
+    <footer>
+        <p>© 2023 Lucky Direction Compass | Chinese Astrology Tools</p>
+    </footer>
 
     <script>
         let compassEventListener = null;
@@ -257,9 +210,10 @@
                     }
                 }
 
-                // 绑定指南针监听器
+                // 绑定指南针监听器 - 修复箭头位置计算
                 compassEventListener = function(event) {
                     const alpha = event.alpha || 0;
+                    // 修复角度计算，确保箭头始终在指南针范围内
                     let adjustedAngle = (360 - alpha + currentJoyAngle) % 360;
                     
                     // 最短路径旋转优化
@@ -268,10 +222,18 @@
                     else if (angleDiff < -180) adjustedAngle += 360;
                     
                     lastAdjustedAngle = adjustedAngle;
-                    document.querySelector('.compass-needle-container').style.transform = 
-                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
-                    document.querySelector('.camera-needle-container').style.transform = 
-                        `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    
+                    // 应用旋转，确保箭头在容器内
+                    const compassNeedle = document.querySelector('.compass-needle-container');
+                    const cameraNeedle = document.querySelector('.camera-needle-container');
+                    
+                    if (compassNeedle) {
+                        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    }
+                    if (cameraNeedle) {
+                        cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
+                    }
+                    
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
                 };
                 window.addEventListener("deviceorientation", compassEventListener);
@@ -324,8 +286,14 @@
 
         // 工具函数
         function showError(message) {
-            document.getElementById('errorContainer') || (document.getElementById('results').innerHTML += 
-                `<div id="errorContainer" class="permission-prompt">${message}</div>`);
+            const results = document.getElementById('results');
+            const existingError = document.getElementById('errorContainer');
+            
+            if (existingError) {
+                existingError.textContent = message;
+            } else {
+                results.innerHTML += `<div id="errorContainer" class="permission-prompt">${message}</div>`;
+            }
         }
 
         function showMessage(message) {
