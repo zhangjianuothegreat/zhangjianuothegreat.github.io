@@ -9,7 +9,7 @@
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-inline'; 
-        connect-src https://lucky-compass-backend.fly.dev; 
+        connect-src https://lucky-backend-ten.vercel.app; 
         media-src 'self' blob: /static/sound_bath/*; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
@@ -29,6 +29,7 @@
 
     <nav class="bg-blue-900 p-4 shadow-md">
         <div class="container mx-auto flex justify-center space-x-6">
+            <a href="https://www.yourluckycompass.com" class="text-white hover:underline bg-white text-blue-900 px-3 py-1 rounded-md absolute left-4">← Back to Home</a>
             <a href="https://www.yourluckycompass.com/" class="text-white hover:underline">Home</a>
             <a href="https://www.yourluckycompass.com/bazi" class="text-white hover:underline">Cosmic Blueprint</a>
             <a href="https://www.yourluckycompass.com/lucky-city" class="text-white hover:underline">Lucky City Match</a>
@@ -192,7 +193,7 @@
 
             try {
                 const queryParams = `year=${year}&month=${month}&day=${day}&timezone=${timezone}`;
-                const response = await fetch(`https://lucky-compass-backend.fly.dev/calculate?${queryParams}`);
+                const response = await fetch(`https://lucky-backend-ten.vercel.app/calculate?${queryParams}`);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
                 if (data.error) {
