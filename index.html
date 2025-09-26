@@ -170,7 +170,13 @@
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
         }
 
-        async function calculateBazi() {
+        async function calculateBazi(event) {
+            // 防止默认行为（手机触屏兼容）
+            if (event.type === 'touchstart') {
+                event.preventDefault();
+            }
+            console.log('Calculate button triggered:', event.type); // 调试日志
+
             const year = parseInt(document.getElementById('year').value);
             const month = parseInt(document.getElementById('month').value);
             const day = parseInt(document.getElementById('day').value);
@@ -193,9 +199,14 @@
 
             try {
                 const queryParams = `year=${year}&month=${month}&day=${day}&timezone=${timezone}`;
-                const response = await fetch(`https://lucky-backend-ten.vercel.app/calculate?${queryParams}`);
+                console.log('Fetching from backend:', `https://lucky-backend-ten.vercel.app/calculate?${queryParams}`); // 调试日志
+                const response = await fetch(`https://lucky-backend-ten.vercel.app/calculate?${queryParams}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
+                console.log('Backend response:', data); // 调试日志
                 if (data.error) {
                     showError(`Error: ${data.error}`);
                     return;
@@ -223,18 +234,23 @@
                 tryGetPermissions();
 
             } catch (error) {
-                showError(error.message);
+                console.error('Calculate error:', error); // 调试日志
+                showError(`Failed to fetch results: ${error.message}. Please check network or try again.`);
             }
         }
 
-        async function tryGetPermissions() {
+        async function tryGetPermissions(event) {
+            if (event && event.type === 'touchstart') {
+                event.preventDefault();
+            }
+            console.log('Permission button triggered:', event ? event.type : 'direct call'); // 调试日志
             try {
                 const compassGranted = await requestCompassPermission();
                 if (compassGranted) {
                     await startCamera();
                 }
             } catch (error) {
-                console.error("Permission error:", error);
+                console.error('Permission error:', error); // 调试日志
             }
         }
 
@@ -246,11 +262,13 @@
 
             try {
                 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    console.log('Requesting DeviceOrientation permission'); // 调试日志
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState !== 'granted') {
-                        showError("Compass permission denied. Go to Settings → Safari → Enable 'Motion & Orientation Access'");
+                        showError("Compass permission denied. Go to Settings → Safari → Enable 'Motion & Orientation Access'.");
                         return false;
                     }
+                    console.log('Compass permission granted'); // 调试日志
                 }
 
                 compassEventListener = function(event) {
@@ -288,7 +306,8 @@
                 return true;
 
             } catch (error) {
-                showError("Failed to access compass. Please enable permissions.");
+                console.error('Compass permission error:', error); // 调试日志
+                showError("Failed to access compass. On iOS: Settings → Safari → Motion & Orientation Access → Enable.");
                 return false;
             }
         }
@@ -300,6 +319,7 @@
             }
 
             try {
+                console.log('Requesting camera access'); // 调试日志
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'environment', width: { ideal: 300 }, height: { ideal: 300 } }
                 });
@@ -308,10 +328,12 @@
                 videoElement.onerror = () => {
                     stream.getTracks().forEach(track => track.stop());
                 };
+                console.log('Camera access granted'); // 调试日志
                 hasCameraError = false;
                 return true;
 
             } catch (error) {
+                console.error('Camera error:', error); // 调试日志
                 let msg = "Camera access failed. Please enable permissions.";
                 if (error.name === 'NotAllowedError') {
                     msg = "Camera permission denied. Check browser settings.";
@@ -345,7 +367,8 @@
             audio.volume = 0.3;
             audio.play().then(() => {
                 isPlaying = true;
-            }).catch(e => console.log('Audio play failed:', e));
+                console.log('Playing audio:', randomAudio); // 调试日志
+            }).catch(e => console.error('Audio play failed:', e));
         }
 
         function stopHarmonySound() {
@@ -354,10 +377,15 @@
                 audio.pause();
                 audio.currentTime = 0;
                 isPlaying = false;
+                console.log('Audio stopped'); // 调试日志
             }
         }
 
-        async function shareCosmicDegree() {
+        async function shareCosmicDegree(event) {
+            if (event.type === 'touchstart') {
+                event.preventDefault();
+            }
+            console.log('Share button triggered:', event.type); // 调试日志
             try {
                 await navigator.share({
                     title: 'My Cosmic Degree',
@@ -397,9 +425,13 @@
             }
         });
 
+        // 事件监听：添加 touchstart 兼容手机
         document.getElementById('calculateBtn').addEventListener('click', calculateBazi);
+        document.getElementById('calculateBtn').addEventListener('touchstart', calculateBazi);
         document.getElementById('permissionButton').addEventListener('click', tryGetPermissions);
+        document.getElementById('permissionButton').addEventListener('touchstart', tryGetPermissions);
         document.getElementById('shareButton').addEventListener('click', shareCosmicDegree);
+        document.getElementById('shareButton').addEventListener('touchstart', shareCosmicDegree);
     </script>
 </body>
 </html>
