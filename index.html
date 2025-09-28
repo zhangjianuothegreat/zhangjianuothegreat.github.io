@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1e3a8a">
-    <meta name="description" content="Unlock your cosmic destiny with the Lucky Direction Compass, blending ancient wisdom, your birth chart, and real-time star alignment to guide you to peace and success.">
-    <meta name="keywords" content="lucky direction, cosmic compass, astrology, mindfulness, sound bath">
+    <meta name="description" content="Unlock your cosmic destiny with the Lucky Direction Compass.">
+    <meta name="keywords" content="lucky direction, cosmic compass, astrology">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self'; 
         script-src 'self' 'unsafe-inline'; 
         connect-src https://lucky-backend-ten.vercel.app; 
-        media-src 'self' blob: /static/sound_bath/*; 
+        media-src 'self' blob: https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/*; 
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -19,230 +19,245 @@
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/styles.css">
     <style>
+        body {
+            font-family: 'Roboto', sans-serif !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden !important;
+        }
+        /* 强制增大输入框 */
+        input[type="number"], select {
+            font-size: 1.5rem !important;
+            padding: 1.2rem !important;
+            border: 3px solid #d1d5db !important;
+            border-radius: 0.75rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            height: 3.5rem !important;
+            line-height: 1.5rem !important;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            opacity: 1 !important;
+            margin-right: 0.5rem !important;
+        }
+        input[type="number"]::placeholder {
+            font-size: 1.3rem !important;
+            color: #6b7280 !important;
+            opacity: 0.8 !important;
+        }
+        /* 指南针和摄像头圆圈 */
+        .compass, #camera {
+            width: 90vw !important;
+            max-width: 400px !important;
+            height: 90vw !important;
+            max-height: 400px !important;
+            border: 4px solid #15803d !important; /* 绿色圆圈 */
+            border-radius: 50% !important;
+            position: relative !important;
+            background-color: #f9fafb !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+            overflow: hidden !important;
+        }
+        /* 强制箭头居中 */
+        .compass-needle-container, .camera-needle-container {
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            transform-origin: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 10 !important;
+        }
+        .needle, .camera-needle {
+            font-size: 5rem !important;
+            font-weight: 900 !important;
+            color: #dc2626 !important;
+            text-shadow: 0 0 10px rgba(0,0,0,0.4) !important;
+            line-height: 1 !important;
+        }
+        .lucky-text, .camera-lucky-text {
+            font-size: 2rem !important;
+            font-weight: 700 !important;
+            color: #f59e0b !important;
+            text-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+            margin-top: 0.5rem !important;
+        }
+        /* 摄像头视频 */
+        #video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 1 !important;
+        }
+        #overlay {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 5 !important;
+        }
+        /* 移动端优化 */
         @media (max-width: 640px), (orientation: landscape) and (max-height: 640px) {
-            .mobile-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 0.5rem;
-            }
-            .mobile-nav a {
-                font-size: 0.9rem;
-                padding: 0.3rem 0.6rem;
-            }
-            .back-link {
-                position: static !important;
-                margin-bottom: 0.5rem !important;
-                width: 100% !important;
-            }
             input[type="number"], select {
-                font-size: 1.3rem !important;
+                font-size: 1.4rem !important;
                 padding: 1rem !important;
-                height: auto !important;
-                border: 2px solid #d1d5db !important;
-                border-radius: 0.75rem !important;
-                pointer-events: auto !important;
-                opacity: 1 !important;
-            }
-            input[type="number"]::-webkit-inner-spin-button,
-            input[type="number"]::-webkit-outer-spin-button {
-                opacity: 1;
-                margin-right: 0.5rem;
+                height: 3rem !important;
             }
             input[type="number"]::placeholder {
                 font-size: 1.2rem !important;
-                color: #6b7280 !important;
-                opacity: 0.8 !important;
             }
-            .compass {
-                width: 90vw !important;
-                height: 90vw !important;
-                max-width: 380px !important;
-                max-height: 380px !important;
-                border: 3px solid #15803d !important; /* 绿色圆圈 */
-                background-color: #f9fafb !important;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
-            }
-            #camera {
-                width: 90vw !important;
-                height: 90vw !important;
-                max-width: 380px !important;
-                max-height: 380px !important;
-                border: 3px solid #15803d !important;
-                margin-top: 1.5rem !important;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+            .compass, #camera {
+                width: 85vw !important;
+                height: 85vw !important;
+                max-width: 360px !important;
+                max-height: 360px !important;
             }
             .needle, .camera-needle {
                 font-size: 4rem !important;
-                font-weight: 900 !important;
-                color: #dc2626 !important;
-                text-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                line-height: 1 !important;
             }
             .lucky-text, .camera-lucky-text {
                 font-size: 1.8rem !important;
-                font-weight: 700 !important;
-                color: #f59e0b !important;
-                text-shadow: 0 0 5px rgba(0,0,0,0.2) !important;
-                margin-top: 0.5rem !important;
-            }
-            h1 {
-                font-size: 2.2rem !important;
-            }
-            .permission-prompt, #directionTitle, #degree {
-                font-size: 1.2rem !important;
             }
             #results p {
-                font-size: 1.1rem !important;
+                font-size: 1.2rem !important;
             }
             button {
                 font-size: 1.2rem !important;
                 padding: 1rem !important;
             }
         }
-        .text-shadow {
-            text-shadow: 0 0 3px #000, 0 0 5px #000;
+        /* 按钮和提示 */
+        button {
+            transition: transform 0.1s ease !important;
         }
         .button-active {
-            transform: scale(0.95);
-            transition: transform 0.1s ease;
+            transform: scale(0.95) !important;
         }
-        .compass-needle-container, .camera-needle-container {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: auto !important;
-            height: auto !important;
-            transform-origin: center !important;
-        }
-        audio {
-            display: none !important;
-        }
-        #playSoundMessage {
+        #playSoundMessage, #errorContainer {
             margin: 0.5rem 0 !important;
             padding: 0.75rem !important;
             border-radius: 0.5rem !important;
         }
-        #playSoundButton, #stopSoundButton {
-            margin: 0.5rem 0 1rem !important;
+        #playSoundButton, #stopSoundButton, #retryFetchBtn {
+            margin: 0.5rem 0 !important;
             padding: 0.75rem !important;
-            font-size: 1.1rem !important;
+            font-size: 1.2rem !important;
         }
-        input[type="number"] {
-            caret-color: #1e3a8a !important;
-            cursor: text !important;
+        audio {
+            display: none !important;
         }
     </style>
 </head>
-<body class="bg-gray-100 font-roboto text-gray-800">
-    <header class="text-center py-6 md:py-8 bg-gradient-to-r from-blue-800 to-teal-600 text-white">
+<body class="bg-gray-100 text-gray-800">
+    <header class="text-center py-6 bg-gradient-to-r from-blue-800 to-teal-600 text-white">
         <h1 class="text-3xl md:text-4xl font-bold">Unlock Your Cosmic Compass</h1>
-        <p class="mt-2 text-lg">Discover your unique path to luck and serenity, guided by the stars and ancient wisdom.</p>
+        <p class="mt-2 text-lg">Discover your unique path to luck and serenity.</p>
     </header>
 
-    <nav class="bg-blue-900 p-3 md:p-4 shadow-md">
+    <nav class="bg-blue-900 p-3 shadow-md">
         <div class="container mx-auto flex mobile-nav space-x-2 md:space-x-6">
-            <a href="https://www.yourluckycompass.com" class="back-link text-white hover:underline bg-white text-blue-900 px-3 py-1 rounded-md">← Back to Home</a>
-            <a href="https://www.yourluckycompass.com/" class="text-white hover:underline">Home</a>
-            <a href="https://www.yourluckycompass.com/bazi" class="text-white hover:underline">Cosmic Blueprint</a>
-            <a href="https://www.yourluckycompass.com/lucky-city" class="text-white hover:underline">Lucky City Match</a>
+            <a href="/" class="back-link text-white hover:underline bg-white text-blue-900 px-3 py-1 rounded-md">← Back to Home</a>
+            <a href="/" class="text-white hover:underline">Home</a>
+            <a href="/bazi" class="text-white hover:underline">Cosmic Blueprint</a>
+            <a href="/lucky_city" class="text-white hover:underline">Lucky City Match</a>
             <a href="#" class="text-white hover:underline font-bold">Cosmic Compass</a>
-            <a href="https://www.yourluckycompass.com/sound-bath" class="text-white hover:underline">Sound Bath</a>
+            <a href="/sound_bath" class="text-white hover:underline">Sound Bath</a>
         </div>
     </nav>
 
-    <section class="container mx-auto p-4 md:p-6 max-w-4xl">
-        <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6">
-            <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Sync with a soothing Sound Bath and rotate your phone to align with the cosmos!</p>
+    <section class="container mx-auto p-4 max-w-4xl">
+        <div class="card bg-white p-5 rounded-lg shadow-md mb-5">
+            <p class="mb-4 text-center">Enter your birth date and timezone to reveal your cosmic degree.</p>
             <div class="space-y-4 max-w-md mx-auto">
-                <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required class="w-full p-3 border rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
-                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required class="w-full p-3 border rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required class="w-full p-3 border rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required>
+                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required>
                 <select id="timezone" class="w-full p-3 border rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="-12">UTC-12:00 (International Date Line West)</option>
-                    <option value="-11">UTC-11:00 (Niue, Samoa)</option>
+                    <option value="-12">UTC-12:00</option>
+                    <option value="-11">UTC-11:00</option>
                     <option value="-10">UTC-10:00 (Hawaii)</option>
                     <option value="-9">UTC-09:00 (Alaska)</option>
-                    <option value="-8">UTC-08:00 (Pacific, Los Angeles)</option>
-                    <option value="-7">UTC-07:00 (Mountain, Denver)</option>
-                    <option value="-6">UTC-06:00 (Central, Chicago)</option>
-                    <option value="-5" selected>UTC-05:00 (Eastern, New York)</option>
-                    <option value="-4">UTC-04:00 (Atlantic, Halifax)</option>
+                    <option value="-8">UTC-08:00 (Pacific)</option>
+                    <option value="-7">UTC-07:00 (Mountain)</option>
+                    <option value="-6">UTC-06:00 (Central)</option>
+                    <option value="-5" selected>UTC-05:00 (Eastern)</option>
+                    <option value="-4">UTC-04:00 (Atlantic)</option>
                     <option value="-3.5">UTC-03:30 (Newfoundland)</option>
-                    <option value="-3">UTC-03:00 (Argentina, Brazil)</option>
-                    <option value="-2">UTC-02:00 (South Georgia)</option>
-                    <option value="-1">UTC-01:00 (Azores, Cape Verde)</option>
-                    <option value="0">UTC±00:00 (London, GMT)</option>
-                    <option value="1">UTC+01:00 (Paris, Berlin)</option>
-                    <option value="2">UTC+02:00 (Cairo, Athens)</option>
-                    <option value="3">UTC+03:00 (Moscow, Riyadh)</option>
+                    <option value="-3">UTC-03:00 (Brazil)</option>
+                    <option value="-2">UTC-02:00</option>
+                    <option value="-1">UTC-01:00</option>
+                    <option value="0">UTC±00:00 (London)</option>
+                    <option value="1">UTC+01:00 (Paris)</option>
+                    <option value="2">UTC+02:00 (Cairo)</option>
+                    <option value="3">UTC+03:00 (Moscow)</option>
                     <option value="3.5">UTC+03:30 (Iran)</option>
                     <option value="4">UTC+04:00 (Dubai)</option>
                     <option value="4.5">UTC+04:30 (Afghanistan)</option>
                     <option value="5">UTC+05:00 (Pakistan)</option>
                     <option value="5.5">UTC+05:30 (India)</option>
                     <option value="5.75">UTC+05:45 (Nepal)</option>
-                    <option value="6">UTC+06:00 (Bangladesh, Bhutan)</option>
+                    <option value="6">UTC+06:00 (Bangladesh)</option>
                     <option value="6.5">UTC+06:30 (Myanmar)</option>
-                    <option value="7">UTC+07:00 (Bangkok, Hanoi)</option>
-                    <option value="8">UTC+08:00 (Beijing, Singapore)</option>
-                    <option value="9">UTC+09:00 (Tokyo, Seoul)</option>
+                    <option value="7">UTC+07:00 (Bangkok)</option>
+                    <option value="8">UTC+08:00 (Beijing)</option>
+                    <option value="9">UTC+09:00 (Tokyo)</option>
                     <option value="9.5">UTC+09:30 (Adelaide)</option>
-                    <option value="10">UTC+10:00 (Sydney, Melbourne)</option>
-                    <option value="10.5">UTC+10:30 (Lord Howe Island)</option>
-                    <option value="11">UTC+11:00 (Solomon Islands)</option>
-                    <option value="12">UTC+12:00 (New Zealand, Fiji)</option>
-                    <option value="13">UTC+13:00 (Samoa, Tokelau)</option>
-                    <option value="14">UTC+14:00 (Line Islands)</option>
+                    <option value="10">UTC+10:00 (Sydney)</option>
+                    <option value="10.5">UTC+10:30</option>
+                    <option value="11">UTC+11:00</option>
+                    <option value="12">UTC+12:00 (New Zealand)</option>
+                    <option value="13">UTC+13:00</option>
+                    <option value="14">UTC+14:00</option>
                 </select>
-                <p class="text-sm text-gray-500">Select your birth timezone (consider DST if applicable)</p>
-                <button id="calculateBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">Find My Cosmic Degree</button>
-                <button id="retryFetchBtn" class="w-full bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 hidden">Retry Calculation</button>
+                <p class="text-sm text-gray-500">Select your birth timezone</p>
+                <button id="calculateBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active focus:outline-none focus:ring-2 focus:ring-blue-500">Find My Cosmic Degree</button>
+                <button id="retryFetchBtn" class="w-full bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active focus:outline-none focus:ring-2 focus:ring-yellow-500 hidden">Retry Calculation</button>
             </div>
         </div>
 
-        <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6" id="permissionNotice" style="display: none;">
-            <p class="permission-prompt font-medium">To align with the stars, allow camera and compass access when prompted.</p>
+        <div class="card bg-white p-5 rounded-lg shadow-md mb-5" id="permissionNotice" style="display: none;">
+            <p class="permission-prompt font-medium">Allow camera and compass access when prompted.</p>
             <p class="text-sm text-gray-600">For iOS: Enable "Motion & Orientation Access" in Settings → Safari.</p>
-            <button id="permissionButton" class="mt-3 bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-yellow-500">Enable Permissions</button>
-            <button id="retryButton" class="mt-3 bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" style="display: none;">Retry Permissions</button>
+            <button id="permissionButton" class="mt-3 bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active focus:outline-none focus:ring-2 focus:ring-yellow-500">Enable Permissions</button>
+            <button id="retryButton" class="mt-3 bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 active:button-active focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">Retry Permissions</button>
         </div>
 
-        <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6" id="results"></div>
+        <div class="card bg-white p-5 rounded-lg shadow-md mb-5" id="results"></div>
 
-        <div id="directionTitle" class="text-center font-medium text-blue-800">Current / Cosmic Degree</div>
+        <div id="directionTitle" class="text-center font-medium text-blue-800 text-lg">Current / Cosmic Degree</div>
         <div id="degree" class="text-center text-lg my-2 font-medium">0° / --°</div>
 
-        <div id="compass" class="compass mx-auto w-48 h-48 border-2 border-green-800 rounded-full relative bg-white shadow-md mt-4">
+        <div id="compass" class="compass mx-auto relative">
             <div class="compass-needle-container transition-transform duration-300 ease-out">
-                <div class="needle text-red-600 text-2xl">↑</div>
-                <div class="lucky-text text-yellow-600 font-bold text-base mt-1">LUCKY</div>
+                <div class="needle">↑</div>
+                <div class="lucky-text">LUCKY</div>
             </div>
         </div>
 
-        <div id="camera" class="mx-auto w-64 h-64 border-2 border-green-800 rounded-full overflow-hidden relative bg-black mt-4">
-            <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
-            <div id="overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div id="camera" class="mx-auto mt-4 relative">
+            <video id="video" autoplay playsinline></video>
+            <div id="overlay">
                 <div class="camera-needle-container transition-transform duration-300 ease-out">
-                    <div class="camera-needle text-red-600 text-3xl">↑</div>
-                    <div class="camera-lucky-text text-yellow-600 font-bold text-lg mt-1 text-shadow">LUCKY</div>
+                    <div class="camera-needle">↑</div>
+                    <div class="camera-lucky-text">LUCKY</div>
                 </div>
             </div>
         </div>
 
         <div class="flex flex-col items-center gap-3 mt-4">
-            <button id="installButton" class="hidden bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">Install App</button>
-            <button id="shareButton" class="w-full max-w-md bg-teal-500 text-white p-3 rounded-md hover:bg-teal-600 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-teal-500">Share Your Cosmic Degree</button>
-            <button id="stopSoundButton" class="w-full max-w-md bg-red-500 text-white p-3 rounded-md hover:bg-red-600 active:button-active text-lg focus:outline-none focus:ring-2 focus:ring-red-500 hidden">Stop Sound</button>
+            <button id="installButton" class="hidden bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active">Install App</button>
+            <button id="shareButton" class="w-full max-w-md bg-teal-500 text-white p-3 rounded-md hover:bg-teal-600 active:button-active">Share Your Cosmic Degree</button>
+            <button id="stopSoundButton" class="w-full max-w-md bg-red-500 text-white p-3 rounded-md hover:bg-red-600 active:button-active hidden">Stop Sound</button>
         </div>
     </section>
 
@@ -257,42 +272,49 @@
         let compassEventListener = null;
         let lastAdjustedAngle = 0;
         let currentJoyAngle = 0;
-        let hasCompassError = false;
-        let hasCameraError = false;
         let rotationHintAdded = false;
         let deferredPrompt;
         let isPlaying = false;
         let smoothedAngle = 0;
         const SMOOTHING_FACTOR = 0.3;
         const audioFiles = [
-            '/static/sound_bath/Bamboo Whisper.mp3',
-            '/static/sound_bath/Bering Mist.mp3',
-            '/static/sound_bath/Blizzard Trek.mp3',
-            '/static/sound_bath/Brook Murmur.mp3',
-            '/static/sound_bath/Cascade Song.mp3',
-            '/static/sound_bath/Chiming Breeze.mp3',
-            '/static/sound_bath/Cicada Summer.mp3',
-            '/static/sound_bath/Deep Dive.mp3',
-            '/static/sound_bath/Drywood Echo.mp3',
-            '/static/sound_bath/Ember Glow.mp3',
-            '/static/sound_bath/Falls Serenade.mp3',
-            '/static/sound_bath/Frog Chorus.mp3',
-            '/static/sound_bath/Gentle Drizzle.mp3',
-            '/static/sound_bath/Harbor Whispers.mp3',
-            '/static/sound_bath/Meadow Wander.mp3',
-            '/static/sound_bath/Monsoon Breath.mp3',
-            '/static/sound_bath/Ocean Pulse.mp3',
-            '/static/sound_bath/Seagull Shore.mp3',
-            '/static/sound_bath/Silent Clarity.mp3',
-            '/static/sound_bath/Spring Shower.mp3',
-            '/static/sound_bath/Starlit Night.mp3',
-            '/static/sound_bath/Streamside Life.mp3',
-            '/static/sound_bath/Sumatra Rain.mp3',
-            '/static/sound_bath/Temple Stillness.mp3',
-            '/static/sound_bath/Thunder Veil.mp3',
-            '/static/sound_bath/Verdant Canopy.mp3',
-            '/static/sound_bath/Wheat Sway.mp3'
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bamboo%20Whisper.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bering%20Mist.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Blizzard%20Trek.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Brook%20Murmur.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cascade%20Song.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Chiming%20Breeze.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cicada%20Summer.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Deep%20Dive.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Drywood%20Echo.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ember%20Glow.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Falls%20Serenade.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Frog%20Chorus.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Gentle%20Drizzle.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Harbor%20Whispers.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Meadow%20Wander.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Monsoon%20Breath.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ocean%20Pulse.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Seagull%20Shore.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Silent%20Clarity.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Spring%20Shower.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Starlit%20Night.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Streamside%20Life.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Sumatra%20Rain.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Temple%20Stillness.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Thunder%20Veil.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Verdant%20Canopy.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Wheat%20Sway.MP3'
         ];
+
+        // 调试日志
+        console.log('Page loaded. Checking CSS and elements...');
+        window.addEventListener('load', () => {
+            console.log('Compass container:', document.getElementById('compass')?.getBoundingClientRect());
+            console.log('Needle container:', document.querySelector('.compass-needle-container')?.getBoundingClientRect());
+            console.log('Camera container:', document.getElementById('camera')?.getBoundingClientRect());
+            console.log('Camera needle:', document.querySelector('.camera-needle-container')?.getBoundingClientRect());
+        });
 
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
@@ -300,31 +322,36 @@
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const supportsPointerEvents = !!window.PointerEvent;
-        const eventType = supportsPointerEvents ? 'pointerdown' : (isMobile ? 'touchstart' : 'click');
+        const eventType = window.PointerEvent ? 'pointerdown' : (isMobile ? 'touchstart' : 'click');
 
-        if (isMobile) {
-            document.querySelectorAll('button, a').forEach(el => {
-                el.addEventListener('touchstart', function() {
-                    this.classList.add('button-active');
-                });
-                el.addEventListener('touchend', function() {
-                    setTimeout(() => this.classList.remove('button-active'), 100);
-                });
-            });
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('touchstart', () => el.classList.add('button-active'));
+            el.addEventListener('touchend', () => setTimeout(() => el.classList.remove('button-active'), 100));
+        });
+
+        function showError(message) {
+            const results = document.getElementById('results');
+            const existingError = document.getElementById('errorContainer');
+            if (existingError) {
+                existingError.textContent = message;
+            } else {
+                results.innerHTML += `<div id="errorContainer" class="text-red-600 p-3 bg-red-50 rounded-md mt-3">${message}</div>`;
+            }
+            results.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function handleInteraction(event, callback) {
-            callback(event);
+        function showMessage(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<p class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
         }
 
-        async function calculateBazi(event) {
+        async function calculateBazi() {
             const button = document.getElementById('calculateBtn');
             const retryButton = document.getElementById('retryFetchBtn');
             button.disabled = true;
             button.textContent = 'Calculating...';
             retryButton.classList.add('hidden');
-            
+
             try {
                 const yearInput = document.getElementById('year');
                 const monthInput = document.getElementById('month');
@@ -344,16 +371,6 @@
                     showError("Please fill in all fields");
                     return;
                 }
-                
-                if (year < 1900 || year > 2025) {
-                    showError("Year must be between 1900 and 2025");
-                    return;
-                }
-                
-                if (month < 1 || month > 12) {
-                    showError("Month must be between 1 and 12");
-                    return;
-                }
 
                 const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
                 const daysInMonth = month === 2 ? (isLeapYear ? 29 : 28) : new Date(year, month, 0).getDate();
@@ -363,15 +380,16 @@
                 }
 
                 const queryParams = `year=${year}&month=${month}&day=${day}&timezone=${timezone}`;
+                console.log('Fetching:', `https://lucky-backend-ten.vercel.app/calculate?${queryParams}`);
                 const response = await fetch(`https://lucky-backend-ten.vercel.app/calculate?${queryParams}`, {
                     method: 'GET',
                     headers: { 'Accept': 'application/json' },
                     signal: AbortSignal.timeout(30000)
                 });
-                
+
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const data = await response.json();
-                
+
                 if (data.error) {
                     showError(`Error: ${data.error}`);
                     return;
@@ -384,15 +402,11 @@
                     <p><b>Your Cosmic Whisper:</b> ${data.mystic_description}</p>
                     <p><b>Your Cosmic Degree:</b> ${data.angle}°</p>
                     <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
-                        <p><b>Align with the Stars:</b> Your cosmic degree is your key to serenity! Guided by ${data.personality.split('.')[0].toLowerCase()}, rotate your phone to align with ${data.angle}°. Breathe deeply, let the universe’s energy flow through you, and find your inner calm.</p>
-                        <p><em>Pro tip: Use your Cosmic Compass daily in a quiet moment to reconnect with the stars!</em></p>
+                        <p><b>Align with the Stars:</b> Rotate your phone to align with ${data.angle}°.</p>
+                        <p><em>Pro tip: Use daily in a quiet moment!</em></p>
                     </div>
                 `;
 
-                if (typeof data.angle === 'undefined' || data.angle === null || isNaN(parseFloat(data.angle))) {
-                    showError("Invalid cosmic degree from server");
-                    return;
-                }
                 currentJoyAngle = parseFloat(data.angle);
                 lastAdjustedAngle = currentJoyAngle % 360;
                 smoothedAngle = lastAdjustedAngle;
@@ -404,11 +418,11 @@
                 audio.src = randomAudio;
                 audio.load();
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
+                console.log('Audio set:', randomAudio);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
                 }
-                
                 if (isMobile) {
                     showMessage("Tap 'Enable Permissions' to access compass and camera.");
                 } else {
@@ -425,7 +439,7 @@
             }
         }
 
-        async function tryGetPermissions(event) {
+        async function tryGetPermissions() {
             try {
                 const permissionButton = document.getElementById('permissionButton');
                 const retryButton = document.getElementById('retryButton');
@@ -437,21 +451,21 @@
                     const cameraGranted = await startCamera();
                     if (!cameraGranted) {
                         document.getElementById('camera').style.display = 'none';
+                        console.log('Camera failed, hiding camera element');
                     }
                 } else {
                     retryButton.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Permission error:', error);
-                showError("Could not access device features. Please check your settings.");
-                document.getElementById('retryButton').style.display = 'block';
+                showError("Could not access device features. Check settings.");
+                retryButton.style.display = 'block';
             }
         }
 
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
-                showError("Compass not supported on this device. Use static compass mode.");
-                document.getElementById('camera').style.display = 'none';
+                showError("Compass not supported on this device.");
                 return false;
             }
 
@@ -459,7 +473,7 @@
                 if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState !== 'granted') {
-                        showError("Compass permission denied. Go to Settings → Safari → Enable 'Motion & Orientation Access'.");
+                        showError("Compass permission denied. Enable in Settings → Safari → Motion & Orientation Access.");
                         return false;
                     }
                 }
@@ -480,9 +494,11 @@
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
                         compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        console.log('Compass needle rotated:', smoothedAngle);
                     }
                     if (cameraNeedle) {
                         cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        console.log('Camera needle rotated:', smoothedAngle);
                     }
 
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
@@ -493,9 +509,9 @@
                         playHarmonySound();
                     }
                 };
-                
-                window.addEventListener("deviceorientation", compassEventListener);
 
+                window.addEventListener("deviceorientation", compassEventListener);
+                console.log('Compass listener added');
                 if (!rotationHintAdded) {
                     showMessage("Rotate your phone to align with the LUCKY marker!");
                     rotationHintAdded = true;
@@ -504,7 +520,7 @@
 
             } catch (error) {
                 console.error('Compass permission error:', error);
-                showError("Failed to access compass. On iOS: Settings → Safari → Motion & Orientation Access → Enable.");
+                showError("Failed to access compass. Enable in Settings → Safari → Motion & Orientation Access.");
                 return false;
             }
         }
@@ -517,32 +533,23 @@
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: 'environment', 
-                        width: { ideal: 380 }, 
-                        height: { ideal: 380 },
-                        aspectRatio: { ideal: 1 }
-                    } 
+                    video: { facingMode: 'environment', width: { ideal: 400 }, height: { ideal: 400 }, aspectRatio: { ideal: 1 } }
                 });
-                
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
-                
+                console.log('Camera stream started');
                 videoElement.onerror = () => {
                     stream.getTracks().forEach(track => track.stop());
                     showError("Error accessing camera feed");
                     document.getElementById('camera').style.display = 'none';
                 };
-                
                 return true;
 
             } catch (error) {
                 console.error('Camera error:', error);
-                let msg = "Camera access failed. Please enable permissions in browser settings.";
+                let msg = "Camera access failed. Enable permissions in browser settings.";
                 if (error.name === 'NotAllowedError') {
-                    msg = isIOS 
-                        ? "Camera permission denied. Go to Settings → Safari → Camera → Allow."
-                        : "Camera permission denied. Check browser settings.";
+                    msg = isIOS ? "Camera permission denied. Enable in Settings → Safari → Camera." : "Camera permission denied.";
                 } else if (error.name === 'NotFoundError') {
                     msg = "No camera found on this device.";
                 }
@@ -551,51 +558,27 @@
             }
         }
 
-        function showError(message) {
-            const results = document.getElementById('results');
-            const existingError = document.getElementById('errorContainer');
-            if (existingError) {
-                existingError.textContent = message;
-            } else {
-                results.innerHTML += `<div id="errorContainer" class="permission-prompt text-red-600 p-3 bg-red-50 rounded-md mt-3">${message}</div>`;
-            }
-            if (isMobile) {
-                document.getElementById('errorContainer')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        function showMessage(message) {
-            const results = document.getElementById('results');
-            results.innerHTML += `<p class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
-        }
-
         function playHarmonySound() {
             if (isPlaying) return;
-            
+
             const audio = document.getElementById('harmonyAudio');
             audio.volume = 0.3;
-            
             audio.play().then(() => {
                 isPlaying = true;
                 localStorage.setItem('cosmicAudioPlaying', 'true');
                 document.getElementById('stopSoundButton').classList.remove('hidden');
                 const msgEl = document.getElementById('playSoundMessage');
                 if (msgEl) msgEl.remove();
-                const btnEl = document.getElementById('playSoundButton');
-                if (btnEl) btnEl.remove();
+                console.log('Audio playing');
             }).catch(e => {
                 console.error('Audio play failed:', e);
                 if (!document.getElementById('playSoundMessage')) {
                     const messageDiv = document.createElement('div');
                     messageDiv.id = 'playSoundMessage';
                     messageDiv.className = 'text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2';
-                    messageDiv.textContent = isIOS 
-                        ? "Tap to play sound (iOS requires interaction for audio). Keep page open to continue."
-                        : "Tap to play harmony sound when aligned with your cosmic degree. Keep page open to continue.";
+                    messageDiv.textContent = isIOS ? "Tap to play sound (iOS requires interaction). Keep page open." : "Tap to play harmony sound. Keep page open.";
                     document.getElementById('results').appendChild(messageDiv);
-                    setTimeout(() => {
-                        if (messageDiv) messageDiv.remove();
-                    }, 3000);
+                    setTimeout(() => messageDiv.remove(), 3000);
                 }
                 if (!document.getElementById('playSoundButton')) {
                     const playButton = document.createElement('button');
@@ -607,9 +590,8 @@
                             isPlaying = true;
                             localStorage.setItem('cosmicAudioPlaying', 'true');
                             document.getElementById('stopSoundButton').classList.remove('hidden');
-                            const msgEl = document.getElementById('playSoundMessage');
-                            if (msgEl) msgEl.remove();
                             playButton.remove();
+                            console.log('Audio started via button');
                         }).catch(console.error);
                     };
                     document.getElementById('results').appendChild(playButton);
@@ -629,7 +611,7 @@
             }
         }
 
-        async function shareCosmicDegree(event) {
+        async function shareCosmicDegree() {
             try {
                 if (currentJoyAngle === 0) {
                     showError("Calculate your cosmic degree first!");
@@ -637,12 +619,12 @@
                 }
                 await navigator.share({
                     title: 'My Cosmic Degree',
-                    text: `I found my cosmic degree: ${currentJoyAngle}° with the Lucky Compass! Discover yours and align with the stars!`,
+                    text: `My cosmic degree: ${currentJoyAngle}°! Discover yours at Your Lucky Compass!`,
                     url: window.location.href
                 });
             } catch (err) {
                 console.error('Share error:', err);
-                showError('Sharing cancelled or failed');
+                showError('Sharing failed');
             }
         }
 
@@ -682,9 +664,9 @@
                 audio.play().then(() => {
                     isPlaying = true;
                     document.getElementById('stopSoundButton').classList.remove('hidden');
+                    console.log('Audio resumed');
                 }).catch(e => {
                     console.error('Resuming audio failed:', e);
-                    localStorage.setItem('cosmicAudioPlaying', 'false');
                     playHarmonySound();
                 });
             }
@@ -696,7 +678,7 @@
             document.getElementById('installButton').style.display = 'block';
         });
 
-        document.getElementById('installButton').addEventListener(eventType, (e) => handleInteraction(e, () => {
+        document.getElementById('installButton').addEventListener(eventType, () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then(choice => {
@@ -706,20 +688,15 @@
                     deferredPrompt = null;
                 });
             }
-        }));
-        document.getElementById('calculateBtn').addEventListener(eventType, (e) => handleInteraction(e, calculateBazi));
-        document.getElementById('permissionButton').addEventListener(eventType, (e) => handleInteraction(e, tryGetPermissions));
-        document.getElementById('retryButton').addEventListener(eventType, (e) => handleInteraction(e, tryGetPermissions));
-        document.getElementById('shareButton').addEventListener(eventType, (e) => handleInteraction(e, shareCosmicDegree));
-        document.getElementById('retryFetchBtn').addEventListener(eventType, (e) => handleInteraction(e, calculateBazi));
-        document.getElementById('stopSoundButton').addEventListener(eventType, (e) => handleInteraction(e, stopHarmonySound));
+        });
+        document.getElementById('calculateBtn').addEventListener(eventType, calculateBazi);
+        document.getElementById('permissionButton').addEventListener(eventType, tryGetPermissions);
+        document.getElementById('retryButton').addEventListener(eventType, tryGetPermissions);
+        document.getElementById('shareButton').addEventListener(eventType, shareCosmicDegree);
+        document.getElementById('retryFetchBtn').addEventListener(eventType, calculateBazi);
+        document.getElementById('stopSoundButton').addEventListener(eventType, stopHarmonySound);
 
-        const inputs = [
-            document.getElementById('year'),
-            document.getElementById('month'),
-            document.getElementById('day')
-        ];
-        
+        const inputs = [document.getElementById('year'), document.getElementById('month'), document.getElementById('day')];
         inputs.forEach((input, index) => {
             input.addEventListener('input', () => {
                 const value = input.value;
@@ -727,7 +704,6 @@
                     input.setCustomValidity('');
                     return;
                 }
-                
                 const numValue = parseInt(value);
                 if (input.id === 'year') {
                     if (numValue < 1900 || numValue > 2025) {
@@ -745,11 +721,10 @@
                     input.setCustomValidity('');
                 }
             });
-            
+
             input.addEventListener('blur', () => {
                 const value = input.value;
                 if (!value) return;
-                
                 const numValue = parseInt(value);
                 if (input.id === 'day') {
                     const year = parseInt(document.getElementById('year').value);
@@ -765,7 +740,7 @@
                     }
                 }
             });
-            
+
             input.addEventListener('keyup', (e) => {
                 if (input.validity.valid && input.value.length === (input.id === 'year' ? 4 : 2) && index < inputs.length - 1) {
                     inputs[index + 1].focus();
