@@ -10,7 +10,7 @@
         default-src 'self';
         script-src 'self' 'unsafe-inline';
         connect-src https://lucky-backend-ten.vercel.app;
-        media-src 'self' blob: https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/*;
+        media-src 'self' blob:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -105,6 +105,7 @@
             background-color: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
+            transition: background-color 0.5s, opacity 0.5s;
         }
         .compass-needle-container {
             position: absolute;
@@ -149,6 +150,12 @@
         #playButton.visible {
             display: block;
             opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
         #playButton:hover {
             background-color: #FFC300;
@@ -413,36 +420,37 @@
         let rotationHintAdded = false;
         let deferredPrompt;
         let isPlaying = false;
-        let smoothedAngle = 0;
+        let isPlayButtonVisible = false;
+        let countdownTimer = null;
         const SMOOTHING_FACTOR = 0.3;
         const audioFiles = [
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bamboo%20Whisper.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bering%20Mist.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Blizzard%20Trek.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Brook%20Murmur.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cascade%20Song.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Chiming%20Breeze.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cicada%20Summer.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Deep%20Dive.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Drywood%20Echo.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ember%20Glow.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Falls%20Serenade.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Frog%20Chorus.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Gentle%20Drizzle.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Harbor%20Whispers.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Meadow%20Wander.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Monsoon%20Breath.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ocean%20Pulse.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Seagull%20Shore.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Silent%20Clarity.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Spring%20Shower.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Starlit%20Night.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Streamside%20Life.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Sumatra%20Rain.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Temple%20Stillness.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Thunder%20Veil.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Verdant%20Canopy.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Wheat%20Sway.MP3'
+            '/static/Bamboo%20Whisper.MP3',
+            '/static/Bering%20Mist.MP3',
+            '/static/Blizzard%20Trek.MP3',
+            '/static/Brook%20Murmur.MP3',
+            '/static/Cascade%20Song.MP3',
+            '/static/Chiming%20Breeze.MP3',
+            '/static/Cicada%20Summer.MP3',
+            '/static/Deep%20Dive.MP3',
+            '/static/Drywood%20Echo.MP3',
+            '/static/Ember%20Glow.MP3',
+            '/static/Falls%20Serenade.MP3',
+            '/static/Frog%20Chorus.MP3',
+            '/static/Gentle%20Drizzle.MP3',
+            '/static/Harbor%20Whispers.MP3',
+            '/static/Meadow%20Wander.MP3',
+            '/static/Monsoon%20Breath.MP3',
+            '/static/Ocean%20Pulse.MP3',
+            '/static/Seagull%20Shore.MP3',
+            '/static/Silent%20Clarity.MP3',
+            '/static/Spring%20Shower.MP3',
+            '/static/Starlit%20Night.MP3',
+            '/static/Streamside%20Life.MP3',
+            '/static/Sumatra%20Rain.MP3',
+            '/static/Temple%20Stillness.MP3',
+            '/static/Thunder%20Veil.MP3',
+            '/static/Verdant%20Canopy.MP3',
+            '/static/Wheat%20Sway.MP3'
         ];
 
         // 调试日志
@@ -544,7 +552,7 @@
                         <p><b>Your Cosmic Degree:</b> ${data.angle}°</p>
                         <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
                             <p><b>Align with the Stars:</b> Rotate your phone to align with ${data.angle}°.</p>
-                            <p><em>Pro tip: Use daily in a quiet moment!</em></p>
+                            <p><em>Pro tip: Tap the flashing 'Play Harmony' button to start sound!</em></p>
                         </div>
                     </div>
                 `;
@@ -561,7 +569,7 @@
                 audio.load();
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
                 console.log('Audio set:', randomAudio);
-                showMessage("Tap 'Play Harmony' when it appears to start sound.", 8000);
+                showMessage("Tap the flashing 'Play Harmony' button when it appears to start sound.", 8000);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
@@ -648,11 +656,20 @@
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     const playButton = document.getElementById('playButton');
-                    if (diff <= 20 && !isPlaying) {
+                    if (diff <= 20 && !isPlayButtonVisible && !isPlaying) {
+                        isPlayButtonVisible = true;
                         playButton.classList.add('visible');
                         localStorage.setItem('cosmicAudioPlaying', 'true');
-                    } else {
+                        // Start 60-second countdown
+                        clearTimeout(countdownTimer);
+                        countdownTimer = setTimeout(() => {
+                            isPlayButtonVisible = false;
+                            playButton.classList.remove('visible');
+                        }, 60000);
+                    } else if (diff > 20 && isPlayButtonVisible && !isPlaying) {
+                        isPlayButtonVisible = false;
                         playButton.classList.remove('visible');
+                        clearTimeout(countdownTimer);
                     }
                 };
 
@@ -714,6 +731,8 @@
                 localStorage.setItem('cosmicAudioPlaying', 'true');
                 document.getElementById('stopSoundButton').classList.remove('hidden');
                 document.getElementById('playButton').classList.remove('visible');
+                isPlayButtonVisible = false;
+                clearTimeout(countdownTimer);
                 console.log('Audio playing');
                 showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
             }).catch(e => {
@@ -758,6 +777,7 @@
                     window.removeEventListener('deviceorientation', compassEventListener);
                     compassEventListener = null;
                 }
+                clearTimeout(countdownTimer);
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
                 if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
