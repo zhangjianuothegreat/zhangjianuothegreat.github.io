@@ -416,6 +416,8 @@
         let isCompassActive = false;
         let countdownTimer = null;
         let audioContext = null;
+        let audioRetryCount = 0;
+        const MAX_AUDIO_RETRIES = 3;
         const SMOOTHING_FACTOR = 0.3;
         const audioFiles = [
             'static/Bamboo%20Whisper.MP3',
@@ -447,7 +449,6 @@
             'static/Wheat%20Sway.MP3'
         ];
 
-        // 调试日志
         console.log('Page loaded. Checking device orientation support...');
         window.addEventListener('load', () => {
             console.log('Compass:', document.getElementById('compass')?.getBoundingClientRect());
@@ -576,9 +577,12 @@
                 const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
                 const audio = document.getElementById('harmonyAudio');
                 audio.src = randomAudio;
-                audio.load();
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
-                console.log('Audio set:', randomAudio);
+                console.log('Audio set:', randomAudio, 'URL:', new URL(randomAudio, window.location.origin).href);
+                audio.load().catch(e => {
+                    console.error('Audio preload failed:', e);
+                    showMessage("Failed to preload audio. Tap the compass to try again.", 5000);
+                });
                 showMessage("Tap the flashing compass when it appears to play harmony sound.", 8000);
 
                 if (compassEventListener) {
@@ -743,15 +747,16 @@
             console.log('Audio element readyState:', document.getElementById('harmonyAudio').readyState);
             console.log('Audio element networkState:', document.getElementById('harmonyAudio').networkState);
 
+            audioRetryCount = 0; // 重置重试计数
             initAudioContext();
             const audio = document.getElementById('harmonyAudio');
             let audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
 
-            if (!audioSrc) {
+            if (!audioSrc || !audioFiles.includes(audioSrc)) {
                 audioSrc = audioFiles[Math.floor(Math.random() * audioFiles.length)];
                 audio.src = audioSrc;
                 localStorage.setItem('cosmicAudioSrc', audioSrc);
-                console.log('No audio source, selected:', audioSrc);
+                console.log('No valid audio source, selected:', audioSrc, 'URL:', new URL(audioSrc, window.location.origin).href);
             }
 
             audio.load();
@@ -769,14 +774,20 @@
                     showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
                 }).catch(e => {
                     console.error('HTML5 Audio play failed:', e);
-                    showMessage("Tap the compass again to enable audio playback.", 5000);
+                    showMessage("HTML5 audio failed. Trying Web Audio API...", 5000);
                     playAudioWithWebAudioAPI(audioSrc);
                 });
             }
         }
 
         function playAudioWithWebAudioAPI(audioUrl) {
-            console.log('Attempting Web Audio API for:', audioUrl);
+            if (audioRetryCount >= MAX_AUDIO_RETRIES) {
+                console.error('Max audio retries reached:', MAX_AUDIO_RETRIES);
+                showError("Unable to play audio after multiple attempts. Please try again later.");
+                return;
+            }
+
+            console.log('Attempting Web Audio API for:', audioUrl, 'Retry count:', audioRetryCount + 1);
             fetch(audioUrl, { signal: AbortSignal.timeout(10000) })
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -805,19 +816,24 @@
                     clearTimeout(countdownTimer);
                     console.log('Audio playing via Web Audio API:', audioUrl);
                     showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
+                    audioRetryCount = 0; // 重置重试计数
                 })
                 .catch(e => {
                     console.error('Web Audio API failed:', e);
+                    audioRetryCount++;
                     const currentIndex = audioFiles.indexOf(audioUrl);
                     const nextIndex = (currentIndex + 1) % audioFiles.length;
                     const nextAudio = audioFiles[nextIndex];
                     const audio = document.getElementById('harmonyAudio');
                     audio.src = nextAudio;
-                    audio.load();
                     localStorage.setItem('cosmicAudioSrc', nextAudio);
-                    console.log('Trying next audio file:', nextAudio);
-                    showMessage("Failed to play sound. Trying another audio file...", 3000);
-                    setTimeout(() => playHarmonySound(), 100);
+                    console.log('Trying next audio file:', nextAudio, 'URL:', new URL(nextAudio, window.location.origin).href);
+                    showMessage("Failed to play audio. Trying another file...", 3000);
+                    if (audioRetryCount < MAX_AUDIO_RETRIES) {
+                        setTimeout(() => playAudioWithWebAudioAPI(nextAudio), 1000); // 延迟重试
+                    } else {
+                        showError("Unable to play audio after multiple attempts. Please try again.");
+                    }
                 });
         }
 
@@ -903,46 +919,27 @@
         });
 
         window.addEventListener('load', () => {
-            initAudioContext();
             const audio = document.getElementById('harmonyAudio');
             audio.addEventListener('loadedmetadata', () => {
                 console.log('Audio metadata loaded:', audio.src);
             });
             audio.addEventListener('error', (e) => {
                 console.error('Audio element error:', e.target.error.code, e.target.error.message);
+                if (audioRetryCount >= MAX_AUDIO_RETRIES) {
+                    showError("Unable to load audio after multiple attempts. Please try again.");
+                    return;
+                }
+                audioRetryCount++;
                 const currentSrc = audio.src;
                 const currentIndex = audioFiles.indexOf(currentSrc);
                 const nextIndex = (currentIndex + 1) % audioFiles.length;
                 const nextAudio = audioFiles[nextIndex];
                 audio.src = nextAudio;
-                audio.load();
                 localStorage.setItem('cosmicAudioSrc', nextAudio);
-                console.log('Audio error, trying next file:', nextAudio);
+                console.log('Audio error, trying next file:', nextAudio, 'URL:', new URL(nextAudio, window.location.origin).href);
                 showMessage("Failed to load audio. Trying another file...", 3000);
+                audio.load();
             });
-
-            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                const lastAudioSrc = localStorage.getItem('cosmicAudioSrc');
-                if (lastAudioSrc && audioFiles.includes(lastAudioSrc)) {
-                    audio.src = lastAudioSrc;
-                } else {
-                    const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                    audio.src = randomAudio;
-                    localStorage.setItem('cosmicAudioSrc', randomAudio);
-                }
-                audio.load().catch(e => {
-                    console.error('Audio preload failed:', e);
-                    showMessage("Failed to preload audio. Tap the compass to try again.", 5000);
-                });
-            } else {
-                const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                audio.src = randomAudio;
-                localStorage.setItem('cosmicAudioSrc', randomAudio);
-                audio.load().catch(e => {
-                    console.error('Audio preload failed:', e);
-                    showMessage("Failed to preload audio. Tap the compass to try again.", 5000);
-                });
-            }
         });
 
         window.addEventListener('beforeinstallprompt', (e) => {
