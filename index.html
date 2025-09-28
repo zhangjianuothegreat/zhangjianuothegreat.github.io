@@ -10,7 +10,7 @@
         default-src 'self';
         script-src 'self' 'unsafe-inline';
         connect-src https://lucky-backend-ten.vercel.app;
-        media-src 'self' blob:;
+        media-src 'self' blob: data:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -141,13 +141,18 @@
         }
         .play-text {
             position: absolute;
-            bottom: 20px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
             color: #1e3a8a;
             font-weight: bold;
-            text-shadow: 0 0 2px rgba(0,0,0,0.2);
+            text-shadow: 0 0 3px rgba(0,0,0,0.3);
+            z-index: 15;
+            display: none;
+        }
+        #compass.active .play-text {
+            display: block;
         }
         #camera {
             width: 90vw;
@@ -286,6 +291,9 @@
             .lucky-text, .camera-lucky-text {
                 font-size: 20px;
             }
+            .play-text {
+                font-size: 18px;
+            }
         }
         audio {
             display: none;
@@ -410,33 +418,33 @@
         let audioContext = null;
         const SMOOTHING_FACTOR = 0.3;
         const audioFiles = [
-            '/static/Bamboo%20Whisper.MP3',
-            '/static/Bering%20Mist.MP3',
-            '/static/Blizzard%20Trek.MP3',
-            '/static/Brook%20Murmur.MP3',
-            '/static/Cascade%20Song.MP3',
-            '/static/Chiming%20Breeze.MP3',
-            '/static/Cicada%20Summer.MP3',
-            '/static/Deep%20Dive.MP3',
-            '/static/Drywood%20Echo.MP3',
-            '/static/Ember%20Glow.MP3',
-            '/static/Falls%20Serenade.MP3',
-            '/static/Frog%20Chorus.MP3',
-            '/static/Gentle%20Drizzle.MP3',
-            '/static/Harbor%20Whispers.MP3',
-            '/static/Meadow%20Wander.MP3',
-            '/static/Monsoon%20Breath.MP3',
-            '/static/Ocean%20Pulse.MP3',
-            '/static/Seagull%20Shore.MP3',
-            '/static/Silent%20Clarity.MP3',
-            '/static/Spring%20Shower.MP3',
-            '/static/Starlit%20Night.MP3',
-            '/static/Streamside%20Life.MP3',
-            '/static/Sumatra%20Rain.MP3',
-            '/static/Temple%20Stillness.MP3',
-            '/static/Thunder%20Veil.MP3',
-            '/static/Verdant%20Canopy.MP3',
-            '/static/Wheat%20Sway.MP3'
+            'static/Bamboo%20Whisper.MP3',
+            'static/Bering%20Mist.MP3',
+            'static/Blizzard%20Trek.MP3',
+            'static/Brook%20Murmur.MP3',
+            'static/Cascade%20Song.MP3',
+            'static/Chiming%20Breeze.MP3',
+            'static/Cicada%20Summer.MP3',
+            'static/Deep%20Dive.MP3',
+            'static/Drywood%20Echo.MP3',
+            'static/Ember%20Glow.MP3',
+            'static/Falls%20Serenade.MP3',
+            'static/Frog%20Chorus.MP3',
+            'static/Gentle%20Drizzle.MP3',
+            'static/Harbor%20Whispers.MP3',
+            'static/Meadow%20Wander.MP3',
+            'static/Monsoon%20Breath.MP3',
+            'static/Ocean%20Pulse.MP3',
+            'static/Seagull%20Shore.MP3',
+            'static/Silent%20Clarity.MP3',
+            'static/Spring%20Shower.MP3',
+            'static/Starlit%20Night.MP3',
+            'static/Streamside%20Life.MP3',
+            'static/Sumatra%20Rain.MP3',
+            'static/Temple%20Stillness.MP3',
+            'static/Thunder%20Veil.MP3',
+            'static/Verdant%20Canopy.MP3',
+            'static/Wheat%20Sway.MP3'
         ];
 
         // 调试日志
@@ -478,20 +486,20 @@
             }
         }
 
-        // 初始化音频上下文
         function initAudioContext() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 console.log('Audio context initialized');
             }
-            // 恢复音频上下文（iOS 需要用户交互后恢复）
             if (audioContext.state === 'suspended') {
                 audioContext.resume().then(() => {
                     console.log('Audio context resumed');
                 }).catch(e => {
                     console.error('Failed to resume audio context:', e);
+                    showError('Audio context could not be resumed. Tap again to play sound.');
                 });
             }
+            return audioContext;
         }
 
         async function calculateBazi() {
@@ -595,9 +603,7 @@
                 permissionButton.style.display = 'none';
                 retryButton.style.display = 'none';
 
-                // 提前初始化音频上下文
                 initAudioContext();
-
                 const compassGranted = await requestCompassPermission();
                 if (compassGranted) {
                     const cameraGranted = await startCamera();
@@ -668,7 +674,6 @@
                         isCompassActive = true;
                         compass.classList.add('active');
                         localStorage.setItem('cosmicAudioPlaying', 'true');
-                        // Start 60-second countdown
                         clearTimeout(countdownTimer);
                         countdownTimer = setTimeout(() => {
                             isCompassActive = false;
@@ -734,42 +739,53 @@
         function playHarmonySound() {
             if (isPlaying) return;
 
-            initAudioContext(); // 确保音频上下文已初始化
+            console.log('Attempting to play audio, isPlaying:', isPlaying);
+            console.log('Audio element readyState:', document.getElementById('harmonyAudio').readyState);
+            console.log('Audio element networkState:', document.getElementById('harmonyAudio').networkState);
 
+            initAudioContext();
             const audio = document.getElementById('harmonyAudio');
-            const audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
+            let audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
 
             if (!audioSrc) {
-                showError("No audio source available. Please calculate your cosmic degree first.");
-                return;
+                audioSrc = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+                audio.src = audioSrc;
+                localStorage.setItem('cosmicAudioSrc', audioSrc);
+                console.log('No audio source, selected:', audioSrc);
             }
 
-            // 尝试 HTML5 Audio
-            audio.volume = 0;
-            audio.play().then(() => {
-                audio.volume = 0.3;
-                isPlaying = true;
-                localStorage.setItem('cosmicAudioPlaying', 'true');
-                document.getElementById('stopSoundButton').classList.remove('hidden');
-                document.getElementById('compass').classList.remove('active');
-                isCompassActive = false;
-                clearTimeout(countdownTimer);
-                console.log('Audio playing via HTML5 Audio:', audioSrc);
-                showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
-            }).catch(e => {
-                console.error('HTML5 Audio play failed:', e);
-                // 尝试 Web Audio API
-                playAudioWithWebAudioAPI(audioSrc);
-            });
+            audio.load();
+            audio.volume = 0.3;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    localStorage.setItem('cosmicAudioPlaying', 'true');
+                    document.getElementById('stopSoundButton').classList.remove('hidden');
+                    document.getElementById('compass').classList.remove('active');
+                    isCompassActive = false;
+                    clearTimeout(countdownTimer);
+                    console.log('Audio playing via HTML5 Audio:', audioSrc);
+                    showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
+                }).catch(e => {
+                    console.error('HTML5 Audio play failed:', e);
+                    showMessage("Tap the compass again to enable audio playback.", 5000);
+                    playAudioWithWebAudioAPI(audioSrc);
+                });
+            }
         }
 
         function playAudioWithWebAudioAPI(audioUrl) {
+            console.log('Attempting Web Audio API for:', audioUrl);
             fetch(audioUrl, { signal: AbortSignal.timeout(10000) })
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     return response.arrayBuffer();
                 })
-                .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                .then(arrayBuffer => {
+                    initAudioContext();
+                    return audioContext.decodeAudioData(arrayBuffer);
+                })
                 .then(audioBuffer => {
                     const source = audioContext.createBufferSource();
                     source.buffer = audioBuffer;
@@ -790,9 +806,8 @@
                     console.log('Audio playing via Web Audio API:', audioUrl);
                     showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
                 })
-                .catch(error => {
-                    console.error('Web Audio API error:', error);
-                    // 尝试加载下一个音频
+                .catch(e => {
+                    console.error('Web Audio API failed:', e);
                     const currentIndex = audioFiles.indexOf(audioUrl);
                     const nextIndex = (currentIndex + 1) % audioFiles.length;
                     const nextAudio = audioFiles[nextIndex];
@@ -801,8 +816,8 @@
                     audio.load();
                     localStorage.setItem('cosmicAudioSrc', nextAudio);
                     console.log('Trying next audio file:', nextAudio);
-                    showMessage("Failed to play sound. Trying another audio file.", 5000);
-                    playHarmonySound(); // 重试
+                    showMessage("Failed to play sound. Trying another audio file...", 3000);
+                    setTimeout(() => playHarmonySound(), 100);
                 });
         }
 
@@ -814,13 +829,16 @@
                 if (window.webAudioSource) {
                     try {
                         window.webAudioSource.stop();
-                        audioContext.close();
-                        audioContext = null;
+                        window.webAudioGainNode.disconnect();
                     } catch (e) {
                         console.error('Error stopping Web Audio:', e);
                     }
                     window.webAudioSource = null;
                     window.webAudioGainNode = null;
+                }
+                if (audioContext) {
+                    audioContext.close();
+                    audioContext = null;
                 }
                 isPlaying = false;
                 localStorage.setItem('cosmicAudioPlaying', 'false');
@@ -854,13 +872,17 @@
                     compassEventListener = null;
                 }
                 clearTimeout(countdownTimer);
-                if (audioContext) {
+                if (audioContext && audioContext.state !== 'suspended') {
                     audioContext.suspend();
                     console.log('Audio context suspended');
                 }
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
                 if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume();
+                        console.log('Audio context resumed');
+                    }
                     showMessage("Tap the flashing compass to resume sound.", 8000);
                 }
             }
@@ -881,20 +903,46 @@
         });
 
         window.addEventListener('load', () => {
+            initAudioContext();
             const audio = document.getElementById('harmonyAudio');
             audio.addEventListener('loadedmetadata', () => {
                 console.log('Audio metadata loaded:', audio.src);
             });
-            audio.addEventListener('error', () => {
-                console.error('Audio element error:', audio.error);
-                const currentIndex = audioFiles.indexOf(audio.src);
+            audio.addEventListener('error', (e) => {
+                console.error('Audio element error:', e.target.error.code, e.target.error.message);
+                const currentSrc = audio.src;
+                const currentIndex = audioFiles.indexOf(currentSrc);
                 const nextIndex = (currentIndex + 1) % audioFiles.length;
                 const nextAudio = audioFiles[nextIndex];
                 audio.src = nextAudio;
                 audio.load();
                 localStorage.setItem('cosmicAudioSrc', nextAudio);
-                console.log('Trying next audio file:', nextAudio);
+                console.log('Audio error, trying next file:', nextAudio);
+                showMessage("Failed to load audio. Trying another file...", 3000);
             });
+
+            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
+                const lastAudioSrc = localStorage.getItem('cosmicAudioSrc');
+                if (lastAudioSrc && audioFiles.includes(lastAudioSrc)) {
+                    audio.src = lastAudioSrc;
+                } else {
+                    const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+                    audio.src = randomAudio;
+                    localStorage.setItem('cosmicAudioSrc', randomAudio);
+                }
+                audio.load().catch(e => {
+                    console.error('Audio preload failed:', e);
+                    showMessage("Failed to preload audio. Tap the compass to try again.", 5000);
+                });
+            } else {
+                const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+                audio.src = randomAudio;
+                localStorage.setItem('cosmicAudioSrc', randomAudio);
+                audio.load().catch(e => {
+                    console.error('Audio preload failed:', e);
+                    showMessage("Failed to preload audio. Tap the compass to try again.", 5000);
+                });
+            }
         });
 
         window.addEventListener('beforeinstallprompt', (e) => {
