@@ -136,13 +136,19 @@
             background-color: #FFD700;
             color: #333;
             border: none;
-            padding: 15px 30px;
+            padding: 20px 40px;
             border-radius: 50%;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: bold;
             cursor: pointer;
             display: none;
             z-index: 15;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color 0.3s, transform 0.3s, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        #playButton.visible {
+            display: block;
+            opacity: 1;
         }
         #playButton:hover {
             background-color: #FFC300;
@@ -228,10 +234,12 @@
             border-radius: 6px;
             color: #92400e;
             font-size: 14px;
+            text-align: center;
         }
         .permission-prompt {
             color: #dc3545;
-            font-size: 0.9em;
+            font-size: 1em;
+            font-weight: bold;
         }
         #errorContainer {
             margin-top: 10px;
@@ -239,6 +247,7 @@
             background-color: #fff1f2;
             padding: 10px;
             border-radius: 5px;
+            text-align: center;
         }
         footer {
             background-color: #4A90E2;
@@ -270,7 +279,7 @@
                 font-size: 14px;
                 padding: 10px;
             }
-            .compass, #camera {
+            #compass, #camera {
                 width: 85vw;
                 max-width: 250px;
                 height: 85vw;
@@ -283,8 +292,8 @@
                 font-size: 20px;
             }
             #playButton {
-                padding: 12px 25px;
-                font-size: 16px;
+                padding: 15px 30px;
+                font-size: 18px;
             }
         }
         audio {
@@ -310,23 +319,53 @@
 
     <section>
         <div class="card">
-            <p class="mb-4 text-center">Enter your birth date and timezone to reveal your cosmic degree.</p>
+            <p class="mb-4 text-center">Enter your birth date and select your timezone to reveal your cosmic degree.</p>
             <form class="flex flex-col gap-4 max-w-md mx-auto">
                 <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
                 <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required>
                 <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required>
-                <input type="number" id="timezone" placeholder="Timezone (e.g., 8 for UTC+8)" step="0.1" required>
-                <p class="text-sm text-gray-500">Enter your birth timezone (e.g., 8 for Beijing, -5 for New York)</p>
+                <select id="timezone" required>
+                    <option value="-12" data-label="UTC-12:00">UTC-12:00 (Baker Island)</option>
+                    <option value="-11" data-label="UTC-11:00">UTC-11:00 (American Samoa)</option>
+                    <option value="-10" data-label="UTC-10:00">UTC-10:00 (Hawaii)</option>
+                    <option value="-9" data-label="UTC-09:00">UTC-09:00 (Alaska)</option>
+                    <option value="-8" data-label="UTC-08:00">UTC-08:00 (Pacific Time)</option>
+                    <option value="-7" data-label="UTC-07:00">UTC-07:00 (Mountain Time)</option>
+                    <option value="-6" data-label="UTC-06:00">UTC-06:00 (Central Time)</option>
+                    <option value="-5" data-label="UTC-05:00" selected>UTC-05:00 (Eastern Time)</option>
+                    <option value="-4" data-label="UTC-04:00">UTC-04:00 (Atlantic Time)</option>
+                    <option value="-3" data-label="UTC-03:00">UTC-03:00 (Brasilia)</option>
+                    <option value="-2" data-label="UTC-02:00">UTC-02:00 (Mid-Atlantic)</option>
+                    <option value="-1" data-label="UTC-01:00">UTC-01:00 (Azores)</option>
+                    <option value="0" data-label="UTC±00:00">UTC±00:00 (London)</option>
+                    <option value="1" data-label="UTC+01:00">UTC+01:00 (Paris)</option>
+                    <option value="2" data-label="UTC+02:00">UTC+02:00 (Cairo)</option>
+                    <option value="3" data-label="UTC+03:00">UTC+03:00 (Moscow)</option>
+                    <option value="4" data-label="UTC+04:00">UTC+04:00 (Dubai)</option>
+                    <option value="5" data-label="UTC+05:00">UTC+05:00 (Karachi)</option>
+                    <option value="5.5" data-label="UTC+05:30">UTC+05:30 (India)</option>
+                    <option value="6" data-label="UTC+06:00">UTC+06:00 (Dhaka)</option>
+                    <option value="7" data-label="UTC+07:00">UTC+07:00 (Bangkok)</option>
+                    <option value="8" data-label="UTC+08:00">UTC+08:00 (Beijing)</option>
+                    <option value="9" data-label="UTC+09:00">UTC+09:00 (Tokyo)</option>
+                    <option value="10" data-label="UTC+10:00">UTC+10:00 (Sydney)</option>
+                    <option value="11" data-label="UTC+11:00">UTC+11:00 (Solomon Islands)</option>
+                    <option value="12" data-label="UTC+12:00">UTC+12:00 (Fiji)</option>
+                    <option value="13" data-label="UTC+13:00">UTC+13:00 (Tonga)</option>
+                    <option value="14" data-label="UTC+14:00">UTC+14:00 (Line Islands)</option>
+                </select>
+                <p class="text-sm text-gray-500">Select your birth timezone (default: Eastern Time)</p>
                 <button id="calculateBtn" type="button">Find My Cosmic Degree</button>
                 <button id="retryFetchBtn" type="button" class="hidden">Retry Calculation</button>
             </form>
         </div>
 
-        <div class="card" id="permissionNotice" style="display: none;">
-            <p class="permission-prompt font-medium">Allow camera and compass access when prompted.</p>
-            <p class="text-sm text-gray-600">For iOS: Enable "Motion & Orientation Access" in Settings → Safari.</p>
-            <button id="permissionButton">Enable Permissions</button>
+        <div class="card" id="permissionNotice">
+            <p class="permission-prompt font-medium">Please enable compass and camera access to use the Cosmic Compass.</p>
+            <p class="text-sm text-gray-600">For iOS: Go to Settings → Safari → Enable "Motion & Orientation Access" and "Camera".</p>
+            <p class="text-sm text-gray-600">For Android: Allow permissions when prompted.</p>
+            <button id="permissionButton">Enable Compass & Camera</button>
             <button id="retryButton" class="hidden">Retry Permissions</button>
         </div>
 
@@ -414,6 +453,7 @@
             console.log('Camera:', document.getElementById('camera')?.getBoundingClientRect());
             console.log('Camera Needle:', document.querySelector('.camera-needle-container')?.getBoundingClientRect());
             console.log('DeviceOrientationEvent supported:', 'DeviceOrientationEvent' in window);
+            console.log('Audio files:', audioFiles);
         });
 
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
@@ -435,9 +475,13 @@
             results.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function showMessage(message) {
+        function showMessage(message, duration = 5000) {
             const results = document.getElementById('results');
-            results.innerHTML += `<p class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
+            const messageId = `message-${Date.now()}`;
+            results.innerHTML += `<p id="${messageId}" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
+            if (duration) {
+                setTimeout(() => document.getElementById(messageId)?.remove(), duration);
+            }
         }
 
         async function calculateBazi() {
@@ -451,9 +495,9 @@
                 const yearInput = document.getElementById('year');
                 const monthInput = document.getElementById('month');
                 const dayInput = document.getElementById('day');
-                const timezoneInput = document.getElementById('timezone');
+                const timezoneSelect = document.getElementById('timezone');
 
-                if (!yearInput.validity.valid || !monthInput.validity.valid || !dayInput.validity.valid || !timezoneInput.value) {
+                if (!yearInput.validity.valid || !monthInput.validity.valid || !dayInput.validity.valid || !timezoneSelect.value) {
                     showError("Please correct the input fields");
                     return;
                 }
@@ -461,10 +505,10 @@
                 const year = parseInt(yearInput.value);
                 const month = parseInt(monthInput.value);
                 const day = parseInt(dayInput.value);
-                const timezone = parseFloat(timezoneInput.value);
+                const timezone = parseFloat(timezoneSelect.value);
 
                 if (!year || !month || !day || isNaN(timezone)) {
-                    showError("Please fill in all fields with valid numbers");
+                    showError("Please fill in all fields with valid values");
                     return;
                 }
 
@@ -517,15 +561,12 @@
                 audio.load();
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
                 console.log('Audio set:', randomAudio);
+                showMessage("Tap 'Play Harmony' when it appears to start sound.", 8000);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
                 }
-                if (isMobile) {
-                    showMessage("Tap 'Enable Permissions' to access compass and camera.");
-                } else {
-                    tryGetPermissions();
-                }
+                showMessage("Click 'Enable Compass & Camera' to start using the Cosmic Compass.");
 
             } catch (error) {
                 console.error('Calculate error:', error);
@@ -553,10 +594,11 @@
                     }
                 } else {
                     retryButton.style.display = 'block';
+                    showMessage("Compass permission needed. Click 'Retry Permissions' or check settings.", 8000);
                 }
             } catch (error) {
                 console.error('Permission error:', error);
-                showError("Could not access device features. Check settings.");
+                showError("Could not access device features. Check settings and retry.");
                 document.getElementById('retryButton').style.display = 'block';
             }
         }
@@ -606,18 +648,18 @@
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     const playButton = document.getElementById('playButton');
-                    if (diff <= 10 && !isPlaying) {
-                        playButton.style.display = 'block';
+                    if (diff <= 20 && !isPlaying) {
+                        playButton.classList.add('visible');
                         localStorage.setItem('cosmicAudioPlaying', 'true');
                     } else {
-                        playButton.style.display = 'none';
+                        playButton.classList.remove('visible');
                     }
                 };
 
                 window.addEventListener("deviceorientation", compassEventListener);
                 console.log('Compass listener added');
                 if (!rotationHintAdded) {
-                    showMessage("Rotate your phone to align with the LUCKY marker!");
+                    showMessage("Rotate your phone to align with the LUCKY marker!", 8000);
                     rotationHintAdded = true;
                 }
                 return true;
@@ -671,18 +713,12 @@
                 isPlaying = true;
                 localStorage.setItem('cosmicAudioPlaying', 'true');
                 document.getElementById('stopSoundButton').classList.remove('hidden');
-                document.getElementById('playButton').style.display = 'none';
+                document.getElementById('playButton').classList.remove('visible');
                 console.log('Audio playing');
+                showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
             }).catch(e => {
                 console.error('Audio play failed:', e);
-                const results = document.getElementById('results');
-                if (!document.getElementById('playSoundMessage')) {
-                    results.innerHTML += `
-                        <div id="playSoundMessage" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">
-                            ${isIOS ? "Tap Play Harmony button to start sound (iOS requires interaction)." : "Tap Play Harmony button to start sound."}
-                        </div>`;
-                    setTimeout(() => document.getElementById('playSoundMessage')?.remove(), 5000);
-                }
+                showMessage(isIOS ? "Tap 'Play Harmony' again to start sound (iOS requires interaction)." : "Tap 'Play Harmony' again to start sound.", 8000);
             });
         }
 
@@ -695,6 +731,7 @@
                 localStorage.setItem('cosmicAudioPlaying', 'false');
                 document.getElementById('stopSoundButton').classList.add('hidden');
                 console.log('Audio stopped');
+                showMessage("Sound stopped.", 5000);
             }
         }
 
@@ -724,7 +761,7 @@
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
                 if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                    playHarmonySound();
+                    showMessage("Tap 'Play Harmony' to resume sound.", 8000);
                 }
             }
         });
@@ -746,16 +783,9 @@
         window.addEventListener('load', () => {
             if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
                 const audio = document.getElementById('harmonyAudio');
-                audio.src = localStorage.getItem('cosmicAudioSrc');
+                audio.src = localStorage.getItem('cosmicAudioSrc') || audioFiles[Math.floor(Math.random() * audioFiles.length)];
                 audio.load();
-                audio.play().then(() => {
-                    isPlaying = true;
-                    document.getElementById('stopSoundButton').classList.remove('hidden');
-                    console.log('Audio resumed');
-                }).catch(e => {
-                    console.error('Resuming audio failed:', e);
-                    playHarmonySound();
-                });
+                showMessage("Tap 'Play Harmony' to resume sound.", 8000);
             }
         });
 
