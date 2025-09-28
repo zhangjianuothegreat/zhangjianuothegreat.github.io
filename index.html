@@ -36,22 +36,99 @@
                 margin-bottom: 0.5rem !important;
                 width: 100% !important;
             }
-            .compass, #camera {
-                width: 80vw !important;
-                height: 80vw !important;
-                max-width: 300px !important;
-                max-height: 300px !important;
+            /* 1. 放大输入框 - 优化手机端输入体验 */
+            input[type="number"], select {
+                font-size: 1.3rem !important;
+                padding: 1rem !important;
+                height: auto !important;
+                border: 2px solid #d1d5db !important;
+                border-radius: 0.75rem !important;
+            }
+            /* 2. 优化指南针样式 - 确保箭头在圆圈内且醒目 */
+            .compass {
+                width: 90vw !important;
+                height: 90vw !important;
+                max-width: 380px !important;
+                max-height: 380px !important;
+                border: 3px solid #1e3a8a !important;
+                background-color: #f9fafb !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+            }
+            /* 3. 放大并优化箭头样式 - 确保醒目且居中 */
+            .needle, .camera-needle {
+                font-size: 4rem !important;
+                font-weight: 900 !important;
+                color: #dc2626 !important; /* 深红色更醒目 */
+                text-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                line-height: 1 !important;
+            }
+            .lucky-text, .camera-lucky-text {
+                font-size: 1.8rem !important;
+                font-weight: 700 !important;
+                color: #f59e0b !important; /* 亮黄色更醒目 */
+                text-shadow: 0 0 5px rgba(0,0,0,0.2) !important;
+                margin-top: 0.5rem !important;
+            }
+            /* 4. 放大摄像头容器 - 优化显示 */
+            #camera {
+                width: 90vw !important;
+                height: 90vw !important;
+                max-width: 380px !important;
+                max-height: 380px !important;
+                border: 3px solid #1e3a8a !important;
+                margin-top: 1.5rem !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
             }
             h1 {
-                font-size: 2rem !important;
+                font-size: 2.2rem !important;
+            }
+            .permission-prompt, #directionTitle, #degree {
+                font-size: 1.2rem !important;
+            }
+            button {
+                font-size: 1.2rem !important;
+                padding: 1rem !important;
             }
         }
+        /* 基础样式优化 */
         .text-shadow {
             text-shadow: 0 0 3px #000, 0 0 5px #000;
         }
         .button-active {
             transform: scale(0.95);
             transition: transform 0.1s ease;
+        }
+        /* 确保指南针箭头容器完全居中 */
+        .compass-needle-container, .camera-needle-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+        /* 隐藏音频控件 */
+        audio::-webkit-media-controls {
+            display: none !important;
+        }
+        audio {
+            display: none !important;
+        }
+        /* 优化提示信息样式 */
+        #playSoundMessage {
+            margin: 0.5rem 0 !important;
+            padding: 0.75rem !important;
+            border-radius: 0.5rem !important;
+        }
+        #playSoundButton {
+            margin: 0.5rem 0 1rem !important;
+            padding: 0.75rem !important;
+            font-size: 1.1rem !important;
         }
     </style>
 </head>
@@ -65,10 +142,10 @@
         <div class="container mx-auto flex mobile-nav space-x-2 md:space-x-6">
             <a href="https://www.yourluckycompass.com" class="back-link text-white hover:underline bg-white text-blue-900 px-3 py-1 rounded-md">← Back to Home</a>
             <a href="https://www.yourluckycompass.com/" class="text-white hover:underline">Home</a>
-            <a href="https://www.yourluckycompass.com/bazi" class="text-white hover:underline">Cosmic Blueprint</a>
+            <a href="https://www.yourluckycompass.com/bazi" class="text-white hover:underline">Lucky Cosmic Blueprint</a>
             <a href="https://www.yourluckycompass.com/lucky-city" class="text-white hover:underline">Lucky City Match</a>
             <a href="#" class="text-white hover:underline font-bold">Cosmic Compass</a>
-            <a href="https://www.yourluckycompass.com/sound-bath" class="text-white hover:underline">Sound Bath</a>
+            <a href="https://www.yourluckycompass.com/sound-bath" class="text-white hover:underline">Sound Bath & Mindfulness</a>
         </div>
     </nav>
 
@@ -76,11 +153,12 @@
         <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6">
             <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Sync with a soothing Sound Bath and rotate your phone to align with the cosmos!</p>
             <div class="space-y-4 max-w-md mx-auto">
-                <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required class="w-full p-3 border rounded-md">
+                <!-- 优化输入框大小和体验 -->
+                <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required class="w-full p-3 border rounded-md text-lg">
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
-                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required class="w-full p-3 border rounded-md">
-                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required class="w-full p-3 border rounded-md">
-                <select id="timezone" class="w-full p-3 border rounded-md">
+                <input type="number" id="month" placeholder="Month (1-12)" min="1" max="12" required class="w-full p-3 border rounded-md text-lg">
+                <input type="number" id="day" placeholder="Day (1-31)" min="1" max="31" required class="w-full p-3 border rounded-md text-lg">
+                <select id="timezone" class="w-full p-3 border rounded-md text-lg">
                     <option value="-12">UTC-12:00 (International Date Line West)</option>
                     <option value="-11">UTC-11:00 (Niue, Samoa)</option>
                     <option value="-10">UTC-10:00 (Hawaii)</option>
@@ -118,33 +196,35 @@
                     <option value="14">UTC+14:00 (Line Islands)</option>
                 </select>
                 <p class="text-sm text-gray-500">Select your birth timezone (consider DST if applicable)</p>
-                <button id="calculateBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active">Find My Cosmic Degree</button>
+                <button id="calculateBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active text-lg">Find My Cosmic Degree</button>
             </div>
         </div>
 
         <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6" id="permissionNotice" style="display: none;">
             <p class="permission-prompt font-medium">To align with the stars, allow camera and compass access when prompted.</p>
             <p class="text-sm text-gray-600">For iOS: Enable "Motion & Orientation Access" in Settings → Safari.</p>
-            <button id="permissionButton" class="mt-3 bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active">Enable Permissions</button>
-            <button id="retryButton" class="mt-3 bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 active:button-active" style="display: none;">Retry Permissions</button>
+            <button id="permissionButton" class="mt-3 bg-yellow-500 text-white p-3 rounded-md hover:bg-yellow-600 active:button-active text-lg">Enable Permissions</button>
+            <button id="retryButton" class="mt-3 bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600 active:button-active" style="display: none; text-lg">Retry Permissions</button>
         </div>
 
         <div class="card bg-white p-5 md:p-6 rounded-lg shadow-md mb-5 md:mb-6" id="results"></div>
 
         <div id="directionTitle" class="text-center font-medium text-blue-800">Current / Cosmic Degree</div>
-        <div id="degree" class="text-center text-lg my-2">0° / --°</div>
+        <div id="degree" class="text-center text-lg my-2 font-medium">0° / --°</div>
 
+        <!-- 优化指南针容器 - 确保箭头在圈内 -->
         <div id="compass" class="compass mx-auto w-48 h-48 border-2 border-blue-800 rounded-full relative bg-white shadow-md mt-4">
-            <div class="compass-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
+            <div class="compass-needle-container transition-transform duration-300 ease-out">
                 <div class="needle text-red-600 text-2xl">↑</div>
                 <div class="lucky-text text-yellow-600 font-bold text-base mt-1">LUCKY</div>
             </div>
         </div>
 
+        <!-- 优化摄像头容器 - 确保箭头显示并跟随度数变化 -->
         <div id="camera" class="mx-auto w-64 h-64 border-2 border-blue-800 rounded-full overflow-hidden relative bg-black mt-4">
             <video id="video" autoplay playsinline class="w-full h-full object-cover"></video>
             <div id="overlay" class="absolute top-0 left-0 w-full h-full pointer-events-none">
-                <div class="camera-needle-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center transition-transform duration-300 ease-out">
+                <div class="camera-needle-container transition-transform duration-300 ease-out">
                     <div class="camera-needle text-red-600 text-3xl">↑</div>
                     <div class="camera-lucky-text text-yellow-600 font-bold text-lg mt-1 text-shadow">LUCKY</div>
                 </div>
@@ -152,8 +232,8 @@
         </div>
 
         <div class="flex flex-col items-center gap-3 mt-4">
-            <button id="installButton" class="hidden bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active">Install App</button>
-            <button id="shareButton" class="w-full max-w-md bg-teal-500 text-white p-3 rounded-md hover:bg-teal-600 active:button-active">Share Your Cosmic Degree</button>
+            <button id="installButton" class="hidden bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 active:button-active text-lg">Install App</button>
+            <button id="shareButton" class="w-full max-w-md bg-teal-500 text-white p-3 rounded-md hover:bg-teal-600 active:button-active text-lg">Share Your Cosmic Degree</button>
         </div>
     </section>
 
@@ -162,7 +242,8 @@
         <p>© 2025 Your Lucky Compass</p>
     </footer>
 
-    <audio id="harmonyAudio" preload="auto" playsinline></audio>
+    <!-- 优化音频标签 - 添加loop确保循环播放，preload优化加载 -->
+    <audio id="harmonyAudio" preload="auto" playsinline loop></audio>
 
     <script>
         let compassEventListener = null;
@@ -396,19 +477,18 @@
                     const compassNeedle = document.querySelector('.compass-needle-container');
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
-                        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        compassNeedle.style.transform = `rotate(${smoothedAngle}deg)`;
                     }
                     if (cameraNeedle) {
-                        cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        cameraNeedle.style.transform = `rotate(${smoothedAngle}deg)`;
                     }
 
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
+                    // 当角度接近时自动播放音乐，且不停止
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     if (diff <= 10 && !isPlaying) {
                         playHarmonySound();
-                    } else if (diff > 15 && isPlaying) {
-                        stopHarmonySound();
                     }
                 };
                 
@@ -438,8 +518,8 @@
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { 
                         facingMode: 'environment', 
-                        width: { ideal: 300 }, 
-                        height: { ideal: 300 },
+                        width: { ideal: 350 }, 
+                        height: { ideal: 350 },
                         aspectRatio: { ideal: 1 }
                     } 
                 });
@@ -499,12 +579,24 @@
             audio.play().then(() => {
                 isPlaying = true;
                 console.log('Playing audio:', audio.src);
+                // 播放后移除提示和按钮
+                const msgEl = document.getElementById('playSoundMessage');
+                const btnEl = document.getElementById('playSoundButton');
+                if (msgEl) msgEl.remove();
+                if (btnEl) btnEl.remove();
             }).catch(e => {
                 console.error('Audio play failed:', e);
-                if (!document.getElementById('playSoundButton')) {
-                    showMessage(isIOS 
+                // 只显示一次提示和按钮
+                if (!document.getElementById('playSoundMessage')) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.id = 'playSoundMessage';
+                    messageDiv.className = 'text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2';
+                    messageDiv.textContent = isIOS 
                         ? "Tap to play sound (iOS requires interaction for audio)."
-                        : "Tap to play harmony sound when aligned with your cosmic degree");
+                        : "Tap to play harmony sound when aligned with your cosmic degree";
+                    document.getElementById('results').appendChild(messageDiv);
+                }
+                if (!document.getElementById('playSoundButton')) {
                     const playButton = document.createElement('button');
                     playButton.id = 'playSoundButton';
                     playButton.textContent = 'Play Sound';
@@ -512,24 +604,16 @@
                     playButton.onclick = () => {
                         audio.play().then(() => {
                             isPlaying = true;
+                            // 播放后移除提示和按钮
+                            const msgEl = document.getElementById('playSoundMessage');
+                            const btnEl = document.getElementById('playSoundButton');
+                            if (msgEl) msgEl.remove();
+                            if (btnEl) btnEl.remove();
                         }).catch(console.error);
-                        playButton.remove();
                     };
                     document.getElementById('results').appendChild(playButton);
                 }
             });
-        }
-
-        function stopHarmonySound() {
-            if (isPlaying) {
-                const audio = document.getElementById('harmonyAudio');
-                audio.pause();
-                audio.currentTime = 0;
-                isPlaying = false;
-                console.log('Audio stopped');
-                const playButton = document.getElementById('playSoundButton');
-                if (playButton) playButton.remove();
-            }
         }
 
         async function shareCosmicDegree(event) {
@@ -550,21 +634,31 @@
             }
         }
 
-        // 页面可见性变化处理
+        // 页面可见性变化处理 - 确保音乐持续播放
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 if (compassEventListener) {
                     window.removeEventListener('deviceorientation', compassEventListener);
                     compassEventListener = null;
                 }
-                stopHarmonySound();
+                // 不停止音乐
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 // 恢复指南针（如果之前已授权）
                 requestCompassPermission();
+                // 如果已播放，继续播放
+                if (isPlaying) {
+                    const audio = document.getElementById('harmonyAudio');
+                    audio.play().catch(console.error);
+                }
             }
         });
 
+        // 页面跳转时不停止音乐（使用localStorage记录播放状态）
         window.addEventListener('beforeunload', () => {
+            if (isPlaying) {
+                localStorage.setItem('cosmicAudioPlaying', 'true');
+                localStorage.setItem('cosmicAudioSrc', document.getElementById('harmonyAudio').src);
+            }
             if (compassEventListener) {
                 window.removeEventListener("deviceorientation", compassEventListener);
             }
@@ -572,7 +666,20 @@
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
             }
-            stopHarmonySound();
+        });
+
+        // 页面加载时恢复音乐播放
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
+                const audio = document.getElementById('harmonyAudio');
+                audio.src = localStorage.getItem('cosmicAudioSrc');
+                audio.play().then(() => {
+                    isPlaying = true;
+                }).catch(e => {
+                    console.log('Resuming audio failed:', e);
+                    localStorage.setItem('cosmicAudioPlaying', 'false');
+                });
+            }
         });
 
         window.addEventListener('beforeinstallprompt', (e) => {
