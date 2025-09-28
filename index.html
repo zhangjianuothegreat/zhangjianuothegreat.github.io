@@ -10,7 +10,7 @@
         default-src 'self';
         script-src 'self' 'unsafe-inline';
         connect-src https://lucky-backend-ten.vercel.app;
-        media-src 'self' blob:;
+        media-src 'self' blob: data:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -141,13 +141,18 @@
         }
         .play-text {
             position: absolute;
-            bottom: 20px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
             color: #1e3a8a;
             font-weight: bold;
-            text-shadow: 0 0 2px rgba(0,0,0,0.2);
+            text-shadow: 0 0 3px rgba(0,0,0,0.3);
+            z-index: 15;
+            display: none;
+        }
+        #compass.active .play-text {
+            display: block;
         }
         #camera {
             width: 90vw;
@@ -286,8 +291,7 @@
             .lucky-text, .camera-lucky-text {
                 font-size: 20px;
             }
-            #playButton {
-                padding: 15px 30px;
+            .play-text {
                 font-size: 18px;
             }
         }
@@ -328,7 +332,7 @@
                     <option value="-8" data-label="UTC-08:00">UTC-08:00 (Pacific Time)</option>
                     <option value="-7" data-label="UTC-07:00">UTC-07:00 (Mountain Time)</option>
                     <option value="-6" data-label="UTC-06:00">UTC-06:00 (Central Time)</option>
-                    <option value="-5" data-label="UTC-05:00" selected>UTC-05:00 (Eastern Time)</option>
+                    <option value="-5" data-label="UTC-05:00">UTC-05:00 (Eastern Time)</option>
                     <option value="-4" data-label="UTC-04:00">UTC-04:00 (Atlantic Time)</option>
                     <option value="-3" data-label="UTC-03:00">UTC-03:00 (Brasilia)</option>
                     <option value="-2" data-label="UTC-02:00">UTC-02:00 (Mid-Atlantic)</option>
@@ -342,7 +346,7 @@
                     <option value="5.5" data-label="UTC+05:30">UTC+05:30 (India)</option>
                     <option value="6" data-label="UTC+06:00">UTC+06:00 (Dhaka)</option>
                     <option value="7" data-label="UTC+07:00">UTC+07:00 (Bangkok)</option>
-                    <option value="8" data-label="UTC+08:00">UTC+08:00 (Beijing)</option>
+                    <option value="8" data-label="UTC+08:00" selected>UTC+08:00 (Beijing)</option>
                     <option value="9" data-label="UTC+09:00">UTC+09:00 (Tokyo)</option>
                     <option value="10" data-label="UTC+10:00">UTC+10:00 (Sydney)</option>
                     <option value="11" data-label="UTC+11:00">UTC+11:00 (Solomon Islands)</option>
@@ -350,7 +354,7 @@
                     <option value="13" data-label="UTC+13:00">UTC+13:00 (Tonga)</option>
                     <option value="14" data-label="UTC+14:00">UTC+14:00 (Line Islands)</option>
                 </select>
-                <p class="text-sm text-gray-500">Select your birth timezone (default: Eastern Time)</p>
+                <p class="text-sm text-gray-500">Select your birth timezone (default: Beijing)</p>
                 <button id="calculateBtn" type="button">Find My Cosmic Degree</button>
                 <button id="retryFetchBtn" type="button" class="hidden">Retry Calculation</button>
             </form>
@@ -399,7 +403,7 @@
         <p>© 2025 Your Lucky Compass</p>
     </footer>
 
-    <audio id="harmonyAudio" preload="metadata" playsinline loop></audio>
+    <audio id="harmonyAudio" preload="none" playsinline loop></audio>
 
     <script>
         let compassEventListener = null;
@@ -411,47 +415,18 @@
         let isPlaying = false;
         let isCompassActive = false;
         let countdownTimer = null;
+        let audioContext = null;
         const SMOOTHING_FACTOR = 0.3;
         const audioFiles = [
-            '/static/Bamboo%20Whisper.MP3',
-            '/static/Bering%20Mist.MP3',
-            '/static/Blizzard%20Trek.MP3',
-            '/static/Brook%20Murmur.MP3',
-            '/static/Cascade%20Song.MP3',
-            '/static/Chiming%20Breeze.MP3',
-            '/static/Cicada%20Summer.MP3',
-            '/static/Deep%20Dive.MP3',
-            '/static/Drywood%20Echo.MP3',
-            '/static/Ember%20Glow.MP3',
-            '/static/Falls%20Serenade.MP3',
-            '/static/Frog%20Chorus.MP3',
-            '/static/Gentle%20Drizzle.MP3',
-            '/static/Harbor%20Whispers.MP3',
-            '/static/Meadow%20Wander.MP3',
-            '/static/Monsoon%20Breath.MP3',
-            '/static/Ocean%20Pulse.MP3',
-            '/static/Seagull%20Shore.MP3',
-            '/static/Silent%20Clarity.MP3',
-            '/static/Spring%20Shower.MP3',
-            '/static/Starlit%20Night.MP3',
-            '/static/Streamside%20Life.MP3',
-            '/static/Sumatra%20Rain.MP3',
-            '/static/Temple%20Stillness.MP3',
-            '/static/Thunder%20Veil.MP3',
-            '/static/Verdant%20Canopy.MP3',
-            '/static/Wheat%20Sway.MP3'
+            'static/1.MP3',
+            'static/2.MP3',
+            'static/3.MP3',
+            'static/4.MP3'
         ];
 
-        // 调试日志
-        console.log('Page loaded. Checking device orientation support...');
-        window.addEventListener('load', () => {
-            console.log('Compass:', document.getElementById('compass')?.getBoundingClientRect());
-            console.log('Needle:', document.querySelector('.compass-needle-container')?.getBoundingClientRect());
-            console.log('Camera:', document.getElementById('camera')?.getBoundingClientRect());
-            console.log('Camera Needle:', document.querySelector('.camera-needle-container')?.getBoundingClientRect());
-            console.log('DeviceOrientationEvent supported:', 'DeviceOrientationEvent' in window);
-            console.log('Audio files:', audioFiles);
-        });
+        console.log('Page loaded at:', new Date().toLocaleString());
+        console.log('DeviceOrientationEvent supported:', 'DeviceOrientationEvent' in window);
+        console.log('Audio files:', audioFiles.map(file => new URL(file, window.location.origin).href));
 
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
             window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
@@ -479,6 +454,22 @@
             if (duration) {
                 setTimeout(() => document.getElementById(messageId)?.remove(), duration);
             }
+        }
+
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('Audio context initialized');
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed');
+                }).catch(e => {
+                    console.error('Failed to resume audio context:', e);
+                    showError('Audio context could not be resumed. Tap the compass to try again.');
+                });
+            }
+            return audioContext;
         }
 
         async function calculateBazi() {
@@ -555,15 +546,14 @@
                 const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
                 const audio = document.getElementById('harmonyAudio');
                 audio.src = randomAudio;
-                audio.load();
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
-                console.log('Audio set:', randomAudio);
-                showMessage("Tap the flashing compass when it appears to play harmony sound.", 8000);
+                console.log('Audio set:', randomAudio, 'URL:', new URL(randomAudio, window.location.origin).href);
+                showMessage("Click 'Enable Compass & Camera', then tap the flashing compass to play harmony sound.", 8000);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
+                    compassEventListener = null;
                 }
-                showMessage("Click 'Enable Compass & Camera' to start using the Cosmic Compass.");
 
             } catch (error) {
                 console.error('Calculate error:', error);
@@ -589,9 +579,10 @@
                         document.getElementById('camera').style.display = 'none';
                         console.log('Camera failed, hiding camera element');
                     }
+                    showMessage("Compass ready! Rotate your phone to align with your cosmic degree.", 8000);
                 } else {
                     retryButton.style.display = 'block';
-                    showMessage("Compass permission needed. Click 'Retry Permissions' or check settings.", 8000);
+                    showError("Compass permission needed. Click 'Retry Permissions' or enable in Settings (iOS: Safari → Motion & Orientation Access).");
                 }
             } catch (error) {
                 console.error('Permission error:', error);
@@ -602,7 +593,8 @@
 
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
-                showError("Compass not supported on this device.");
+                showError("Compass not supported on this device. Try another device.");
+                document.getElementById('compass').style.display = 'none';
                 return false;
             }
 
@@ -617,9 +609,11 @@
 
                 compassEventListener = function(event) {
                     if (!event.alpha && event.alpha !== 0) {
-                        console.log('No valid alpha value received');
+                        console.warn('No valid alpha value received from deviceorientation');
                         return;
                     }
+
+                    console.log('Device orientation alpha:', event.alpha, 'currentJoyAngle:', currentJoyAngle);
 
                     const alpha = event.alpha;
                     let adjustedAngle = isIOS ? (alpha + currentJoyAngle) % 360 : (360 - alpha + currentJoyAngle) % 360;
@@ -644,21 +638,23 @@
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
+                    console.log('Angle diff:', diff, 'isCompassActive:', isCompassActive, 'isPlaying:', isPlaying);
                     const compass = document.getElementById('compass');
                     if (diff <= 20 && !isCompassActive && !isPlaying) {
                         isCompassActive = true;
                         compass.classList.add('active');
                         localStorage.setItem('cosmicAudioPlaying', 'true');
-                        // Start 60-second countdown
                         clearTimeout(countdownTimer);
                         countdownTimer = setTimeout(() => {
                             isCompassActive = false;
                             compass.classList.remove('active');
+                            console.log('Compass deactivated after 60s');
                         }, 60000);
                     } else if (diff > 20 && isCompassActive && !isPlaying) {
                         isCompassActive = false;
                         compass.classList.remove('active');
                         clearTimeout(countdownTimer);
+                        console.log('Compass deactivated: angle diff > 20');
                     }
                 };
 
@@ -673,6 +669,7 @@
             } catch (error) {
                 console.error('Compass permission error:', error);
                 showError("Failed to access compass. Enable in Settings → Safari → Motion & Orientation Access.");
+                document.getElementById('compass').style.display = 'none';
                 return false;
             }
         }
@@ -711,184 +708,102 @@
         }
 
         function playHarmonySound() {
-            if (isPlaying) return;
-
-            const audio = document.getElementById('harmonyAudio');
-            const audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
-            
-            if (!audioSrc) {
-                showError("No audio source available. Please calculate your cosmic degree first.");
+            if (isPlaying) {
+                console.log('Audio already playing, skipping');
                 return;
             }
 
-            // 尝试使用HTML5 Audio播放
-            audio.volume = 0;
-            audio.play().then(() => {
-                audio.volume = 0.3; // 恢复音量
-                isPlaying = true;
-                localStorage.setItem('cosmicAudioPlaying', 'true');
-                document.getElementById('stopSoundButton').classList.remove('hidden');
-                document.getElementById('compass').classList.remove('active');
-                isCompassActive = false;
-                clearTimeout(countdownTimer);
-                console.log('Audio playing via HTML5 Audio');
-                showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
-            }).catch(e => {
-                console.error('HTML5 Audio play failed:', e);
-                
-                // 尝试使用Web Audio API作为备选
-                try {
+            console.log('Attempting to play audio, isPlaying:', isPlaying);
+            console.log('Audio element readyState:', document.getElementById('harmonyAudio').readyState);
+            console.log('Audio element networkState:', document.getElementById('harmonyAudio').networkState);
+
+            initAudioContext();
+            const audio = document.getElementById('harmonyAudio');
+            let audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
+
+            if (!audioSrc || !audioFiles.includes(audioSrc)) {
+                audioSrc = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+                audio.src = audioSrc;
+                localStorage.setItem('cosmicAudioSrc', audioSrc);
+                console.log('No valid audio source, selected:', audioSrc, 'URL:', new URL(audioSrc, window.location.origin).href);
+            }
+
+            audio.volume = 0.3;
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    isPlaying = true;
+                    localStorage.setItem('cosmicAudioPlaying', 'true');
+                    document.getElementById('stopSoundButton').classList.remove('hidden');
+                    document.getElementById('compass').classList.remove('active');
+                    isCompassActive = false;
+                    clearTimeout(countdownTimer);
+                    console.log('Audio playing via HTML5 Audio:', audioSrc);
+                    showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
+                }).catch(e => {
+                    console.error('HTML5 Audio play failed:', e);
+                    showMessage("HTML5 audio failed. Trying Web Audio API...", 5000);
                     playAudioWithWebAudioAPI(audioSrc);
-                } catch (webAudioError) {
-                    console.error('Web Audio API also failed:', webAudioError);
-                    showMessage(isIOS ? "Tap the flashing compass again to start sound (iOS requires interaction)." : "Tap the flashing compass again to start sound.", 8000);
-                }
-            });
+                });
+            }
         }
-        
-        // 使用Web Audio API播放音频
+
         function playAudioWithWebAudioAPI(audioUrl) {
-            try {
-                // 创建音频上下文
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                fetch(audioUrl)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.arrayBuffer();
-                    })
-                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                    .then(audioBuffer => {
-                        // 创建缓冲区源
-                        const source = audioContext.createBufferSource();
-                        source.buffer = audioBuffer;
-                        source.loop = true; // 循环播放
-                        
-                        // 创建增益节点控制音量
-                        const gainNode = audioContext.createGain();
-                        gainNode.gain.value = 0.3;
-                        
-                        // 连接节点
-                        source.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        
-                        // 开始播放
-                        source.start();
-                        
-                        // 存储音频上下文和源，以便后续停止
-                        window.webAudioContext = audioContext;
-                        window.webAudioSource = source;
-                        window.webAudioGainNode = gainNode;
-                        
-                        isPlaying = true;
-                        localStorage.setItem('cosmicAudioPlaying', 'true');
-                        document.getElementById('stopSoundButton').classList.remove('hidden');
-                        document.getElementById('compass').classList.remove('active');
-                        isCompassActive = false;
-                        clearTimeout(countdownTimer);
-                        
-                        console.log('Audio playing via Web Audio API');
-                        showMessage("Harmony sound playing (Web Audio). Tap 'Stop Sound' to pause.", 5000);
-                    })
-                    .catch(error => {
-                        console.error('Web Audio API error:', error);
-                        showError(`Failed to play sound: ${error.message}`);
-                        
-                        // 如果fetch失败，尝试直接使用音频上下文创建简单声音
-                        try {
-                            createSimpleSound();
-                        } catch (simpleSoundError) {
-                            console.error('Simple sound creation failed:', simpleSoundError);
-                            showMessage("Failed to play sound. Please try again.", 5000);
-                        }
-                    });
-            } catch (error) {
-                console.error('Web Audio API initialization failed:', error);
-                throw error;
-            }
-        }
-        
-        // 创建简单的测试声音
-        function createSimpleSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                // 创建一个简单的和谐音调
-                oscillator.type = 'sine';
-                oscillator.frequency.value = 440; // A4
-                gainNode.gain.value = 0.2;
-                
-                oscillator.start();
-                
-                // 5秒后稍微改变音调，模拟和谐变化
-                setTimeout(() => {
-                    oscillator.frequency.value = 554.37; // C5
-                    setTimeout(() => {
-                        oscillator.frequency.value = 659.25; // E5
-                        setTimeout(() => {
-                            oscillator.frequency.value = 880; // A5
-                        }, 3000);
-                    }, 3000);
-                }, 5000);
-                
-                // 存储引用以便停止
-                window.simpleSoundOscillator = oscillator;
-                window.simpleSoundContext = audioContext;
-                
-                isPlaying = true;
-                localStorage.setItem('cosmicAudioPlaying', 'true');
-                document.getElementById('stopSoundButton').classList.remove('hidden');
-                document.getElementById('compass').classList.remove('active');
-                isCompassActive = false;
-                clearTimeout(countdownTimer);
-                
-                console.log('Playing simple harmony sound');
-                showMessage("Playing harmony sound (simple tone). Tap 'Stop Sound' to pause.", 5000);
-            } catch (error) {
-                console.error('Failed to create simple sound:', error);
-                throw error;
-            }
+            console.log('Attempting Web Audio API for:', audioUrl, 'URL:', new URL(audioUrl, window.location.origin).href);
+            fetch(audioUrl, { signal: AbortSignal.timeout(10000) })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    initAudioContext();
+                    return audioContext.decodeAudioData(arrayBuffer);
+                })
+                .then(audioBuffer => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.loop = true;
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 0.3;
+                    source.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    source.start();
+                    window.webAudioSource = source;
+                    window.webAudioGainNode = gainNode;
+                    isPlaying = true;
+                    localStorage.setItem('cosmicAudioPlaying', 'true');
+                    document.getElementById('stopSoundButton').classList.remove('hidden');
+                    document.getElementById('compass').classList.remove('active');
+                    isCompassActive = false;
+                    clearTimeout(countdownTimer);
+                    console.log('Audio playing via Web Audio API:', audioUrl);
+                    showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
+                })
+                .catch(e => {
+                    console.error('Web Audio API failed:', e);
+                    showError("Failed to play audio. Please tap the compass again to retry.");
+                });
         }
 
         function stopHarmonySound() {
             if (isPlaying) {
-                // 停止HTML5 Audio
                 const audio = document.getElementById('harmonyAudio');
                 audio.pause();
                 audio.currentTime = 0;
-                
-                // 停止Web Audio API
                 if (window.webAudioSource) {
                     try {
                         window.webAudioSource.stop();
-                        window.webAudioContext.close();
+                        window.webAudioGainNode.disconnect();
                     } catch (e) {
                         console.error('Error stopping Web Audio:', e);
                     }
                     window.webAudioSource = null;
-                    window.webAudioContext = null;
                     window.webAudioGainNode = null;
                 }
-                
-                // 停止简单声音
-                if (window.simpleSoundOscillator) {
-                    try {
-                        window.simpleSoundOscillator.stop();
-                        window.simpleSoundContext.close();
-                    } catch (e) {
-                        console.error('Error stopping simple sound:', e);
-                    }
-                    window.simpleSoundOscillator = null;
-                    window.simpleSoundContext = null;
+                if (audioContext) {
+                    audioContext.close();
+                    audioContext = null;
                 }
-                
                 isPlaying = false;
                 localStorage.setItem('cosmicAudioPlaying', 'false');
                 document.getElementById('stopSoundButton').classList.add('hidden');
@@ -919,11 +834,20 @@
                 if (compassEventListener) {
                     window.removeEventListener('deviceorientation', compassEventListener);
                     compassEventListener = null;
+                    console.log('Compass listener removed on visibility hidden');
                 }
                 clearTimeout(countdownTimer);
+                if (audioContext && audioContext.state !== 'suspended') {
+                    audioContext.suspend();
+                    console.log('Audio context suspended');
+                }
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
                 if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume();
+                        console.log('Audio context resumed');
+                    }
                     showMessage("Tap the flashing compass to resume sound.", 8000);
                 }
             }
@@ -944,46 +868,13 @@
         });
 
         window.addEventListener('load', () => {
-            // 预加载音频
             const audio = document.getElementById('harmonyAudio');
-            
-            // 尝试从localStorage获取上次播放的音频
-            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                const lastAudioSrc = localStorage.getItem('cosmicAudioSrc');
-                if (lastAudioSrc) {
-                    audio.src = lastAudioSrc;
-                    audio.load();
-                    showMessage("Tap the flashing compass to resume sound.", 8000);
-                } else {
-                    // 如果没有上次播放的音频，预加载一个随机音频
-                    const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                    audio.src = randomAudio;
-                    audio.load();
-                    localStorage.setItem('cosmicAudioSrc', randomAudio);
-                }
-            } else {
-                // 预加载一个随机音频
-                const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                audio.src = randomAudio;
-                audio.load();
-                localStorage.setItem('cosmicAudioSrc', randomAudio);
-            }
-            
-            // 添加音频事件监听
             audio.addEventListener('loadedmetadata', () => {
                 console.log('Audio metadata loaded:', audio.src);
             });
-            
             audio.addEventListener('error', (e) => {
-                console.error('Audio element error:', e.target.error);
-                // 尝试加载下一个音频
-                const currentIndex = audioFiles.indexOf(audio.src.split('/').pop().replace(/%20/g, ' '));
-                const nextIndex = (currentIndex + 1) % audioFiles.length;
-                const nextAudio = audioFiles[nextIndex];
-                audio.src = nextAudio;
-                audio.load();
-                localStorage.setItem('cosmicAudioSrc', nextAudio);
-                console.log('Trying next audio file:', nextAudio);
+                console.error('Audio element error:', e.target.error.code, e.target.error.message, 'Source:', audio.src);
+                showError("Failed to load audio. Tap the compass to try again.");
             });
         });
 
