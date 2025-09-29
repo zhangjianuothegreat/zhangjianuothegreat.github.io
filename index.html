@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#4A90E2">
     <meta name="description" content="Unlock your cosmic destiny with the Lucky Direction Compass.">
     <meta name="keywords" content="lucky direction, cosmic compass, astrology">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline';
-        connect-src https://lucky-backend-ten.vercel.app;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        connect-src 'self' https://lucky-backend-ten.vercel.app https://raw.githubusercontent.com;
         media-src 'self' blob: https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/*;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
@@ -18,6 +18,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入烟花动画库 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -26,7 +28,121 @@
             margin: 0;
             padding: 0;
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
         }
+        /* 烟花容器：全屏覆盖 */
+        #confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+        /* 成功提示弹窗 */
+        #successToast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            z-index: 10000;
+            display: none;
+            max-width: 85%;
+        }
+        #successToast h3 {
+            color: #d97706;
+            margin: 0 0 10px;
+            font-size: 22px;
+        }
+        #successToast p {
+            margin: 0;
+            font-size: 16px;
+            color: #333;
+        }
+        /* 权限引导弹窗：强制用户交互 */
+        #permissionModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #permissionModal .modal-content {
+            background-color: white;
+            padding: 30px 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        #permissionModal h3 {
+            color: #4A90E2;
+            margin: 0 0 15px;
+            font-size: 20px;
+        }
+        #permissionModal p {
+            margin: 0 0 25px;
+            color: #666;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        #permissionModal button {
+            background-color: #4A90E2;
+            color: white;
+            margin: 5px;
+            min-height: 55px;
+            font-size: 17px;
+        }
+        #permissionModal button:hover {
+            background-color: #3A80D2;
+        }
+        /* 重叠后罗盘按钮样式 */
+        #compass.compass-active {
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            transition: all 0.3s ease;
+        }
+        #compass.compass-active:hover {
+            transform: scale(1.03);
+        }
+        /* 音浴引导文本 */
+        #soundBathGuide {
+            text-align: center;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #fffbeb;
+            border-radius: 8px;
+            max-width: 85%;
+            display: none;
+        }
+        #soundBathGuide p {
+            margin: 0;
+            color: #92400e;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+        #soundBathGuide a {
+            color: #4A90E2;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        /* 原有样式保留 */
         header {
             background-color: #4A90E2;
             color: white;
@@ -36,6 +152,9 @@
         nav {
             background-color: #50C878;
             padding: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         nav a {
             color: white;
@@ -105,6 +224,7 @@
             background-color: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
+            transition: all 0.3s ease;
         }
         .compass-needle-container {
             position: absolute;
@@ -270,7 +390,7 @@
                 font-size: 14px;
                 padding: 10px;
             }
-            .compass, #camera {
+            #compass, #camera {
                 width: 85vw;
                 max-width: 250px;
                 height: 85vw;
@@ -286,6 +406,18 @@
                 padding: 12px 25px;
                 font-size: 16px;
             }
+            #successToast h3 {
+                font-size: 20px;
+            }
+            #successToast p {
+                font-size: 15px;
+            }
+            #permissionModal h3 {
+                font-size: 18px;
+            }
+            #permissionModal p {
+                font-size: 14px;
+            }
         }
         audio {
             display: none;
@@ -293,6 +425,32 @@
     </style>
 </head>
 <body>
+    <!-- 新增：烟花容器 -->
+    <div id="confetti-container"></div>
+    <!-- 新增：成功提示弹窗 -->
+    <div id="successToast">
+        <h3>Congratulations!</h3>
+        <p>You have found your unique lucky direction.</p>
+    </div>
+    <!-- 新增：权限引导弹窗（默认显示，强制交互） -->
+    <div id="permissionModal">
+        <div class="modal-content">
+            <h3>Need Your Permission</h3>
+            <p>To unlock your cosmic compass, we need access to your device's compass (motion) and camera. This helps you align with your lucky direction accurately.</p>
+            <button id="agreePermissionBtn">Allow Access</button>
+            <button id="showGuideBtn">How to Enable (If Blocked)</button>
+            <p id="permissionGuide" style="display:none; margin-top:15px; color:#dc3545; font-size:13px;">
+                1. If prompted, select "Allow" for compass and camera<br>
+                2. For iOS: Go to Settings → Safari → Enable "Motion & Orientation Access"<br>
+                3. For Android: Go to Settings → Apps → Your Browser → Permissions → Enable "Camera" and "Motion"
+            </p>
+        </div>
+    </div>
+    <!-- 新增：音浴引导文本 -->
+    <div id="soundBathGuide">
+        <p>Now you can access the Sound Bath & Mindfulness feature! Face your lucky direction, sit comfortably, listen to calming sounds, adjust your breath, and feel the connection between your inner self and the universe. <a href="https://www.yourluckycompass.com/sound_bath" target="_blank">Go to Sound Bath</a></p>
+    </div>
+
     <header>
         <h1 class="text-3xl md:text-4xl font-bold">Unlock Your Cosmic Compass</h1>
         <p class="mt-2 text-lg">Discover your unique path to luck and serenity, guided by the stars and ancient wisdom.</p>
@@ -404,6 +562,8 @@
         let deferredPrompt;
         let isPlaying = false;
         let smoothedAngle = 0;
+        let isAligned = false;
+        let forceShowPermissionModal = true; // 新增：权限弹窗强制显示开关
         const SMOOTHING_FACTOR = 0.2;
         const audioFiles = [
             'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bamboo%20Whisper.MP3',
@@ -445,13 +605,100 @@
             console.log('DeviceOrientationEvent supported:', 'DeviceOrientationEvent' in window);
         });
 
-        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-            window.location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            window.location.replace(`https://${window.location.host}${window.location.pathname}${window.location.search}${window.location.hash}`);
         }
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const eventType = window.PointerEvent ? 'pointerdown' : (isMobile ? 'touchstart' : 'click');
+
+        // 新增：获取DOM元素
+        const permissionModal = document.getElementById('permissionModal');
+        const agreePermissionBtn = document.getElementById('agreePermissionBtn');
+        const showGuideBtn = document.getElementById('showGuideBtn');
+        const permissionGuide = document.getElementById('permissionGuide');
+        const confettiContainer = document.getElementById('confetti-container');
+        const successToast = document.getElementById('successToast');
+        const compass = document.getElementById('compass');
+        const soundBathGuide = document.getElementById('soundBathGuide');
+
+        // 新增：权限引导弹窗逻辑
+        agreePermissionBtn.addEventListener(eventType, async () => {
+            permissionModal.style.display = 'none';
+            if (currentJoyAngle !== 0) {
+                await tryGetPermissions();
+            }
+        });
+        showGuideBtn.addEventListener(eventType, () => {
+            permissionGuide.style.display = permissionGuide.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // 修复：全屏烟花动画（持续3秒，满屏粒子）
+        function fireConfetti() {
+            if (isAligned) return;
+            isAligned = true;
+            confettiContainer.style.display = 'block';
+
+            const duration = 3000; // 烟花持续时间
+            const end = Date.now() + duration;
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+
+            function frame() {
+                confetti({
+                    particleCount: 10, // 每帧生成10个粒子
+                    angle: Math.random() * 360, // 随机角度
+                    spread: 100, // 扩散范围（满屏）
+                    origin: { x: Math.random(), y: Math.random() - 0.2 }, // 随机起源点（偏上，模拟下落）
+                    colors: colors,
+                    scalar: Math.random() * 5 + 5, // 粒子大小随机
+                    decay: 0.92, // 粒子消失速度
+                    drift: Math.random() - 0.5 // 粒子随机漂移
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame); // 持续生成粒子
+                } else {
+                    confettiContainer.style.display = 'none';
+                    successToast.style.display = 'block';
+                    setTimeout(() => {
+                        successToast.style.display = 'none';
+                        initCompassAsButton();
+                    }, 3000);
+                }
+            }
+            frame(); // 启动动画
+        }
+
+        // 修复：罗盘转换为按钮逻辑（合并事件，避免重复绑定）
+        function initCompassAsButton() {
+            // 1. 先移除旧事件（避免重复绑定）
+            compass.removeEventListener(eventType, handleCompassClick);
+            compass.removeEventListener('keydown', handleCompassKeydown);
+
+            // 2. 统一跳转函数
+            function handleCompassClick() {
+                window.open('https://www.yourluckycompass.com/sound_bath', '_blank');
+            }
+            function handleCompassKeydown(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault(); // 阻止默认行为（如页面滚动）
+                    handleCompassClick();
+                }
+            }
+
+            // 3. 添加新事件与无障碍属性
+            compass.classList.add('compass-active');
+            compass.setAttribute('role', 'button');
+            compass.setAttribute('aria-label', 'Go to Sound Bath');
+            compass.tabIndex = 0;
+            compass.addEventListener(eventType, handleCompassClick);
+            compass.addEventListener('keydown', handleCompassKeydown);
+
+            // 4. 显示引导文本并隐藏播放按钮
+            soundBathGuide.style.display = 'block';
+            document.getElementById('playButton').style.display = 'none';
+        }
 
         function showError(message) {
             const results = document.getElementById('results');
@@ -512,7 +759,13 @@
                     signal: AbortSignal.timeout(30000)
                 });
 
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        throw new Error("Too many requests. Please try again later.");
+                    } else {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                }
                 const data = await response.json();
 
                 if (data.error) {
@@ -544,21 +797,34 @@
                 const audio = document.getElementById('harmonyAudio');
                 audio.src = randomAudio;
                 audio.load();
+                audio.onerror = () => {
+                    showError("Failed to load audio. Please try again or check your network.");
+                    console.error('Audio load failed:', randomAudio);
+                };
                 localStorage.setItem('cosmicAudioSrc', randomAudio);
                 console.log('Audio set:', randomAudio);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
                 }
-                if (isMobile) {
-                    showMessage("Tap 'Enable Permissions' to access compass and camera.");
-                } else {
-                    tryGetPermissions();
+                if (permissionModal.style.display === 'none') {
+                    if (isMobile) {
+                        showMessage("Compass and camera access will be requested now.");
+                        await tryGetPermissions();
+                    } else {
+                        await tryGetPermissions();
+                    }
                 }
 
             } catch (error) {
                 console.error('Calculate error:', error);
-                showError(`Failed to fetch results: ${error.message}. Please check network or try again.`);
+                let message = "Failed to fetch results. Please check your network or try again.";
+                if (error.name === 'TimeoutError') {
+                    message = "Request timed out. Please try again.";
+                } else if (error.message.includes("Failed to fetch")) {
+                    message = "Network error. Please check your internet connection.";
+                }
+                showError(message);
                 retryButton.classList.remove('hidden');
             } finally {
                 button.disabled = false;
@@ -566,6 +832,7 @@
             }
         }
 
+        // 优化：权限申请逻辑（根据开关决定是否强制显示弹窗）
         async function tryGetPermissions() {
             try {
                 const permissionButton = document.getElementById('permissionButton');
@@ -580,14 +847,33 @@
                         document.getElementById('camera').style.display = 'none';
                         console.log('Camera failed, hiding camera element');
                     }
+                    forceShowPermissionModal = false; // 授权成功，关闭强制显示
                 } else {
                     retryButton.style.display = 'block';
+                    // 仅在“首次访问”或“用户主动点击重试”时显示弹窗
+                    if (forceShowPermissionModal) {
+                        permissionModal.style.display = 'flex';
+                    } else {
+                        // 非首次访问，显示“轻量提示”而非全屏弹窗
+                        showMessage("Compass permission is required. Please enable it in your device settings.");
+                    }
                 }
             } catch (error) {
                 console.error('Permission error:', error);
                 showError("Could not access device features. Check settings.");
                 document.getElementById('retryButton').style.display = 'block';
+                if (forceShowPermissionModal) {
+                    permissionModal.style.display = 'flex';
+                }
             }
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
         }
 
         async function requestCompassPermission() {
@@ -601,11 +887,12 @@
                     const permissionState = await DeviceOrientationEvent.requestPermission();
                     if (permissionState !== 'granted') {
                         showError("Compass permission denied. Enable in Settings → Safari → Motion & Orientation Access.");
+                        permissionModal.style.display = 'flex';
                         return false;
                     }
                 }
 
-                compassEventListener = function(event) {
+                compassEventListener = debounce(function(event) {
                     if (!event.alpha && event.alpha !== 0) {
                         console.log('No valid alpha value received');
                         return;
@@ -635,16 +922,16 @@
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     const playButton = document.getElementById('playButton');
-                    if (diff <= 10 && !isPlaying) {
+                    if (diff <= 10 && !isPlaying && !isAligned) {
                         playButton.style.display = 'block';
                         localStorage.setItem('cosmicAudioPlaying', 'true');
-                        fireConfetti(); // Trigger fireworks animation
-                    } else {
+                        fireConfetti();
+                    } else if (diff > 10 && !isPlaying) {
                         playButton.style.display = 'none';
                     }
-                };
+                }, 50);
 
-                window.addEventListener("deviceorientation", compassEventListener, {passive: true});
+                window.addEventListener("deviceorientation", compassEventListener, { passive: true });
                 console.log('Compass listener added');
                 if (!rotationHintAdded) {
                     showMessage("Rotate your phone to align with the LUCKY marker!");
@@ -655,6 +942,7 @@
             } catch (error) {
                 console.error('Compass permission error:', error);
                 showError("Failed to access compass. Enable in Settings → Safari → Motion & Orientation Access.");
+                permissionModal.style.display = 'flex';
                 return false;
             }
         }
@@ -666,9 +954,16 @@
             }
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment', width: { ideal: 300 }, height: { ideal: 300 }, aspectRatio: { ideal: 1 } }
-                });
+                const constraints = {
+                    video: { 
+                        facingMode: { ideal: 'environment' }, 
+                        width: { ideal: 300 }, 
+                        height: { ideal: 300 }, 
+                        aspectRatio: { ideal: 1 }
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
                 console.log('Camera stream started');
@@ -709,11 +1004,17 @@
                 if (!document.getElementById('playSoundMessage')) {
                     results.innerHTML += `
                         <div id="playSoundMessage" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">
-                            ${isIOS ? "Tap Play Harmony button to start sound (iOS requires interaction)." : "Tap Play Harmony button to start sound."}
+                            ${isIOS ? "Tap Play Harmony button again to start sound (iOS requires interaction)." : "Tap Play Harmony button to start sound."}
                         </div>`;
                     setTimeout(() => document.getElementById('playSoundMessage')?.remove(), 5000);
                 }
             });
+            if (isIOS && window.AudioContext) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => console.log('AudioContext resumed'));
+                }
+            }
         }
 
         function stopHarmonySound() {
@@ -805,9 +1106,13 @@
                 });
             }
         });
+
         document.getElementById('calculateBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('permissionButton').addEventListener(eventType, tryGetPermissions);
-        document.getElementById('retryButton').addEventListener(eventType, tryGetPermissions);
+        document.getElementById('retryButton').addEventListener(eventType, () => {
+            forceShowPermissionModal = true; // 点击重试时强制显示弹窗
+            tryGetPermissions();
+        });
         document.getElementById('shareButton').addEventListener(eventType, shareCosmicDegree);
         document.getElementById('retryFetchBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('stopSoundButton').addEventListener(eventType, stopHarmonySound);
@@ -817,6 +1122,9 @@
         inputs.forEach((input, index) => {
             input.addEventListener('input', () => {
                 const value = input.value;
+                const errorContainer = document.getElementById('errorContainer');
+                if (errorContainer) errorContainer.remove();
+
                 if (!value) {
                     input.setCustomValidity('');
                     return;
@@ -825,17 +1133,30 @@
                 if (input.id === 'year') {
                     if (numValue < 1900 || numValue > 2025) {
                         input.setCustomValidity("Year must be 1900-2025");
+                        showError("Year must be between 1900 and 2025");
                     } else {
                         input.setCustomValidity('');
                     }
                 } else if (input.id === 'month') {
                     if (numValue < 1 || numValue > 12) {
                         input.setCustomValidity("Month must be 1-12");
+                        showError("Month must be between 1 and 12");
                     } else {
                         input.setCustomValidity('');
                     }
                 } else if (input.id === 'day') {
-                    input.setCustomValidity('');
+                    const year = parseInt(document.getElementById('year').value);
+                    const month = parseInt(document.getElementById('month').value);
+                    if (year && month) {
+                        const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+                        const daysInMonth = month === 2 ? (isLeapYear ? 29 : 28) : new Date(year, month, 0).getDate();
+                        if (numValue < 1 || numValue > daysInMonth) {
+                            input.setCustomValidity(`Day must be 1-${daysInMonth}`);
+                            showError(`Day must be between 1 and ${daysInMonth}`);
+                        } else {
+                            input.setCustomValidity('');
+                        }
+                    }
                 }
             });
 
@@ -851,6 +1172,7 @@
                         const daysInMonth = month === 2 ? (isLeapYear ? 29 : 28) : new Date(year, month, 0).getDate();
                         if (numValue < 1 || numValue > daysInMonth) {
                             input.setCustomValidity(`Day must be 1-${daysInMonth}`);
+                            showError(`Day must be between 1 and ${daysInMonth}`);
                         } else {
                             input.setCustomValidity('');
                         }
