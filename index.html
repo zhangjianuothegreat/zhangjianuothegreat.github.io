@@ -10,7 +10,7 @@
         default-src 'self';
         script-src 'self' 'unsafe-inline';
         connect-src https://lucky-backend-ten.vercel.app;
-        media-src 'self' blob: data:;
+        media-src 'self' blob: https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/*;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -105,17 +105,6 @@
             background-color: white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
-            transition: background-color 0.5s, opacity 0.5s;
-            cursor: pointer;
-        }
-        #compass.active {
-            background-color: #FFD700;
-            animation: flash 1.5s infinite;
-        }
-        @keyframes flash {
-            0% { background-color: #FFD700; }
-            50% { background-color: #FFFFFF; }
-            100% { background-color: #FFD700; }
         }
         .compass-needle-container {
             position: absolute;
@@ -139,20 +128,25 @@
             margin-top: 5px;
             text-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
-        .play-text {
+        #playButton {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 20px;
-            color: #1e3a8a;
-            font-weight: bold;
-            text-shadow: 0 0 3px rgba(0,0,0,0.3);
-            z-index: 15;
+            background-color: #FFD700;
+            color: #333;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
             display: none;
+            z-index: 15;
+            transition: background-color 0.3s, transform 0.3s;
         }
-        #compass.active .play-text {
-            display: block;
+        #playButton:hover {
+            background-color: #FFC300;
+            transform: translate(-50%, -50%) scale(1.1);
         }
         #camera {
             width: 90vw;
@@ -234,12 +228,10 @@
             border-radius: 6px;
             color: #92400e;
             font-size: 14px;
-            text-align: center;
         }
         .permission-prompt {
             color: #dc3545;
-            font-size: 1em;
-            font-weight: bold;
+            font-size: 0.9em;
         }
         #errorContainer {
             margin-top: 10px;
@@ -247,7 +239,6 @@
             background-color: #fff1f2;
             padding: 10px;
             border-radius: 5px;
-            text-align: center;
         }
         footer {
             background-color: #4A90E2;
@@ -279,7 +270,7 @@
                 font-size: 14px;
                 padding: 10px;
             }
-            #compass, #camera {
+            .compass, #camera {
                 width: 85vw;
                 max-width: 250px;
                 height: 85vw;
@@ -291,8 +282,9 @@
             .lucky-text, .camera-lucky-text {
                 font-size: 20px;
             }
-            .play-text {
-                font-size: 18px;
+            #playButton {
+                padding: 12px 25px;
+                font-size: 16px;
             }
         }
         audio {
@@ -303,7 +295,7 @@
 <body>
     <header>
         <h1 class="text-3xl md:text-4xl font-bold">Unlock Your Cosmic Compass</h1>
-        <p class="mt-2 text-lg">Discover your unique path to luck and serenity.</p>
+        <p class="mt-2 text-lg">Discover your unique path to luck and serenity, guided by the stars and ancient wisdom.</p>
     </header>
 
     <nav>
@@ -318,7 +310,7 @@
 
     <section>
         <div class="card">
-            <p class="mb-4 text-center">Enter your birth date and select your timezone to reveal your cosmic degree.</p>
+            <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Sync with a soothing Sound Bath and rotate your phone to align with the cosmos!</p>
             <form class="flex flex-col gap-4 max-w-md mx-auto">
                 <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
@@ -354,17 +346,16 @@
                     <option value="13" data-label="UTC+13:00">UTC+13:00 (Tonga)</option>
                     <option value="14" data-label="UTC+14:00">UTC+14:00 (Line Islands)</option>
                 </select>
-                <p class="text-sm text-gray-500">Select your birth timezone (default: Eastern Time)</p>
+                <p class="text-sm text-gray-500">Enter your birth timezone (e.g., 8 for Beijing, -5 for New York)</p>
                 <button id="calculateBtn" type="button">Find My Cosmic Degree</button>
                 <button id="retryFetchBtn" type="button" class="hidden">Retry Calculation</button>
             </form>
         </div>
 
-        <div class="card" id="permissionNotice">
-            <p class="permission-prompt font-medium">Please enable compass and camera access to use the Cosmic Compass.</p>
-            <p class="text-sm text-gray-600">For iOS: Go to Settings → Safari → Enable "Motion & Orientation Access" and "Camera".</p>
-            <p class="text-sm text-gray-600">For Android: Allow permissions when prompted.</p>
-            <button id="permissionButton">Enable Compass & Camera</button>
+        <div class="card" id="permissionNotice" style="display: none;">
+            <p class="permission-prompt font-medium">Allow camera and compass access when prompted.</p>
+            <p class="text-sm text-gray-600">For iOS: Enable "Motion & Orientation Access" in Settings → Safari.</p>
+            <button id="permissionButton">Enable Permissions</button>
             <button id="retryButton" class="hidden">Retry Permissions</button>
         </div>
 
@@ -378,7 +369,7 @@
                 <div class="needle">↑</div>
                 <div class="lucky-text">LUCKY</div>
             </div>
-            <div class="play-text">Play Harmony</div>
+            <button id="playButton">Play Harmony</button>
         </div>
 
         <div id="camera">
@@ -409,19 +400,39 @@
         let compassEventListener = null;
         let lastAdjustedAngle = 0;
         let currentJoyAngle = 0;
-        let smoothedAngle = 0;
         let rotationHintAdded = false;
         let deferredPrompt;
         let isPlaying = false;
-        let isCompassActive = false;
-        let countdownTimer = null;
-        let audioContext = null;
-        const SMOOTHING_FACTOR = 0.3;
+        let smoothedAngle = 0;
+        const SMOOTHING_FACTOR = 0.2;
         const audioFiles = [
-            'static/1.MP3',
-            'static/2.MP3',
-            'static/3.MP3',
-            'static/4.MP3'
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bamboo%20Whisper.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bering%20Mist.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Blizzard%20Trek.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Brook%20Murmur.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cascade%20Song.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Chiming%20Breeze.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cicada%20Summer.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Deep%20Dive.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Drywood%20Echo.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ember%20Glow.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Falls%20Serenade.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Frog%20Chorus.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Gentle%20Drizzle.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Harbor%20Whispers.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Meadow%20Wander.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Monsoon%20Breath.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ocean%20Pulse.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Seagull%20Shore.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Silent%20Clarity.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Spring%20Shower.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Starlit%20Night.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Streamside%20Life.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Sumatra%20Rain.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Temple%20Stillness.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Thunder%20Veil.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Verdant%20Canopy.MP3',
+            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Wheat%20Sway.MP3'
         ];
 
         // 调试日志
@@ -432,7 +443,6 @@
             console.log('Camera:', document.getElementById('camera')?.getBoundingClientRect());
             console.log('Camera Needle:', document.querySelector('.camera-needle-container')?.getBoundingClientRect());
             console.log('DeviceOrientationEvent supported:', 'DeviceOrientationEvent' in window);
-            console.log('Audio files:', audioFiles);
         });
 
         if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
@@ -454,29 +464,9 @@
             results.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function showMessage(message, duration = 5000) {
+        function showMessage(message) {
             const results = document.getElementById('results');
-            const messageId = `message-${Date.now()}`;
-            results.innerHTML += `<p id="${messageId}" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
-            if (duration) {
-                setTimeout(() => document.getElementById(messageId)?.remove(), duration);
-            }
-        }
-
-        function initAudioContext() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                console.log('Audio context initialized');
-            }
-            if (audioContext.state === 'suspended') {
-                audioContext.resume().then(() => {
-                    console.log('Audio context resumed');
-                }).catch(e => {
-                    console.error('Failed to resume audio context:', e);
-                    showError('Audio context could not be resumed. Tap the compass to try again.');
-                });
-            }
-            return audioContext;
+            results.innerHTML += `<p class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
         }
 
         async function calculateBazi() {
@@ -490,9 +480,9 @@
                 const yearInput = document.getElementById('year');
                 const monthInput = document.getElementById('month');
                 const dayInput = document.getElementById('day');
-                const timezoneSelect = document.getElementById('timezone');
+                const timezoneInput = document.getElementById('timezone');
 
-                if (!yearInput.validity.valid || !monthInput.validity.valid || !dayInput.validity.valid || !timezoneSelect.value) {
+                if (!yearInput.validity.valid || !monthInput.validity.valid || !dayInput.validity.valid || !timezoneInput.value) {
                     showError("Please correct the input fields");
                     return;
                 }
@@ -500,10 +490,10 @@
                 const year = parseInt(yearInput.value);
                 const month = parseInt(monthInput.value);
                 const day = parseInt(dayInput.value);
-                const timezone = parseFloat(timezoneSelect.value);
+                const timezone = parseFloat(timezoneInput.value);
 
                 if (!year || !month || !day || isNaN(timezone)) {
-                    showError("Please fill in all fields with valid values");
+                    showError("Please fill in all fields with valid numbers");
                     return;
                 }
 
@@ -539,7 +529,7 @@
                         <p><b>Your Cosmic Degree:</b> ${data.angle}°</p>
                         <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
                             <p><b>Align with the Stars:</b> Rotate your phone to align with ${data.angle}°.</p>
-                            <p><em>Pro tip: Tap the flashing compass to play harmony sound!</em></p>
+                            <p><em>Pro tip: Use daily in a quiet moment!</em></p>
                         </div>
                     </div>
                 `;
@@ -550,28 +540,21 @@
                 document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
                 document.getElementById('permissionNotice').style.display = 'block';
 
-                // 预检查音频文件
-                await checkAudioFiles();
-                if (availableAudioFiles.length === 0) {
-                    showMessage("恭喜你找到了你的幸运方位！现在建议你去访问我们的免费音浴子栏目，去选择一个你喜欢的音浴，聆听自然与宇宙的声音，然后坐禅，让内心宁静，开启你与宇宙之间的对话，感受宇宙赐予你的能量。", 0);
-                    const soundBathLink = document.createElement('a');
-                    soundBathLink.href = '/sound_bath';
-                    soundBathLink.textContent = 'Go to Sound Bath';
-                    soundBathLink.classList.add('button');
-                    document.getElementById('results').appendChild(soundBathLink);
-                } else {
-                    const randomAudio = availableAudioFiles[Math.floor(Math.random() * availableAudioFiles.length)];
-                    const audio = document.getElementById('harmonyAudio');
-                    audio.src = randomAudio;
-                    localStorage.setItem('cosmicAudioSrc', randomAudio);
-                    console.log('Audio set:', randomAudio, 'URL:', new URL(randomAudio, window.location.origin).href);
-                    showMessage("Tap the flashing compass when it appears to play harmony sound.", 8000);
-                }
+                const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+                const audio = document.getElementById('harmonyAudio');
+                audio.src = randomAudio;
+                audio.load();
+                localStorage.setItem('cosmicAudioSrc', randomAudio);
+                console.log('Audio set:', randomAudio);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
                 }
-                showMessage("Click 'Enable Compass & Camera' to start using the Cosmic Compass.");
+                if (isMobile) {
+                    showMessage("Tap 'Enable Permissions' to access compass and camera.");
+                } else {
+                    tryGetPermissions();
+                }
 
             } catch (error) {
                 console.error('Calculate error:', error);
@@ -597,22 +580,19 @@
                         document.getElementById('camera').style.display = 'none';
                         console.log('Camera failed, hiding camera element');
                     }
-                    showMessage("Compass ready! Rotate your phone to align with your cosmic degree.", 8000);
                 } else {
                     retryButton.style.display = 'block';
-                    showError("Compass permission needed. Click 'Retry Permissions' or enable in Settings (iOS: Safari → Motion & Orientation Access).");
                 }
             } catch (error) {
                 console.error('Permission error:', error);
-                showError("Could not access device features. Check settings and retry.");
+                showError("Could not access device features. Check settings.");
                 document.getElementById('retryButton').style.display = 'block';
             }
         }
 
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
-                showError("Compass not supported on this device. Try another device.");
-                document.getElementById('compass').style.display = 'none';
+                showError("Compass not supported on this device.");
                 return false;
             }
 
@@ -627,11 +607,9 @@
 
                 compassEventListener = function(event) {
                     if (!event.alpha && event.alpha !== 0) {
-                        console.warn('No valid alpha value received from deviceorientation');
+                        console.log('No valid alpha value received');
                         return;
                     }
-
-                    console.log('Device orientation alpha:', event.alpha, 'currentJoyAngle:', currentJoyAngle);
 
                     const alpha = event.alpha;
                     let adjustedAngle = isIOS ? (alpha + currentJoyAngle) % 360 : (360 - alpha + currentJoyAngle) % 360;
@@ -656,30 +634,20 @@
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
-                    console.log('Angle diff:', diff, 'isCompassActive:', isCompassActive, 'isPlaying:', isPlaying);
-                    const compass = document.getElementById('compass');
-                    if (diff <= 20 && !isCompassActive && !isPlaying) {
-                        isCompassActive = true;
-                        compass.classList.add('active');
+                    const playButton = document.getElementById('playButton');
+                    if (diff <= 10 && !isPlaying) {
+                        playButton.style.display = 'block';
                         localStorage.setItem('cosmicAudioPlaying', 'true');
-                        clearTimeout(countdownTimer);
-                        countdownTimer = setTimeout(() => {
-                            isCompassActive = false;
-                            compass.classList.remove('active');
-                            console.log('Compass deactivated after 60s');
-                        }, 60000);
-                    } else if (diff > 20 && isCompassActive && !isPlaying) {
-                        isCompassActive = false;
-                        compass.classList.remove('active');
-                        clearTimeout(countdownTimer);
-                        console.log('Compass deactivated: angle diff > 20');
+                        fireConfetti(); // Trigger fireworks animation
+                    } else {
+                        playButton.style.display = 'none';
                     }
                 };
 
-                window.addEventListener("deviceorientation", compassEventListener);
+                window.addEventListener("deviceorientation", compassEventListener, {passive: true});
                 console.log('Compass listener added');
                 if (!rotationHintAdded) {
-                    showMessage("Rotate your phone to align with the LUCKY marker!", 8000);
+                    showMessage("Rotate your phone to align with the LUCKY marker!");
                     rotationHintAdded = true;
                 }
                 return true;
@@ -687,7 +655,6 @@
             } catch (error) {
                 console.error('Compass permission error:', error);
                 showError("Failed to access compass. Enable in Settings → Safari → Motion & Orientation Access.");
-                document.getElementById('compass').style.display = 'none';
                 return false;
             }
         }
@@ -726,81 +693,27 @@
         }
 
         function playHarmonySound() {
-            if (isPlaying) {
-                console.log('Audio already playing, skipping');
-                return;
-            }
+            if (isPlaying) return;
 
-            console.log('Attempting to play audio, isPlaying:', isPlaying);
-            console.log('Audio element readyState:', document.getElementById('harmonyAudio').readyState);
-            console.log('Audio element networkState:', document.getElementById('harmonyAudio').networkState);
-
-            initAudioContext();
             const audio = document.getElementById('harmonyAudio');
-            let audioSrc = audio.src || localStorage.getItem('cosmicAudioSrc');
-
-            if (!audioSrc || !audioFiles.includes(audioSrc)) {
-                audioSrc = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                audio.src = audioSrc;
-                localStorage.setItem('cosmicAudioSrc', audioSrc);
-                console.log('No valid audio source, selected:', audioSrc, 'URL:', new URL(audioSrc, window.location.origin).href);
-            }
-
             audio.volume = 0.3;
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    isPlaying = true;
-                    localStorage.setItem('cosmicAudioPlaying', 'true');
-                    document.getElementById('stopSoundButton').classList.remove('hidden');
-                    document.getElementById('compass').classList.remove('active');
-                    isCompassActive = false;
-                    clearTimeout(countdownTimer);
-                    console.log('Audio playing via HTML5 Audio:', audioSrc);
-                    showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
-                }).catch(e => {
-                    console.error('HTML5 Audio play failed:', e);
-                    showMessage("HTML5 audio failed. Trying Web Audio API...", 5000);
-                    playAudioWithWebAudioAPI(audioSrc);
-                });
-            }
-        }
-
-        function playAudioWithWebAudioAPI(audioUrl) {
-            console.log('Attempting Web Audio API for:', audioUrl, 'URL:', new URL(audioUrl, window.location.origin).href);
-            fetch(audioUrl, { signal: AbortSignal.timeout(10000) })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.arrayBuffer();
-                })
-                .then(arrayBuffer => {
-                    initAudioContext();
-                    return audioContext.decodeAudioData(arrayBuffer);
-                })
-                .then(audioBuffer => {
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.loop = true;
-                    const gainNode = audioContext.createGain();
-                    gainNode.gain.value = 0.3;
-                    source.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    source.start();
-                    window.webAudioSource = source;
-                    window.webAudioGainNode = gainNode;
-                    isPlaying = true;
-                    localStorage.setItem('cosmicAudioPlaying', 'true');
-                    document.getElementById('stopSoundButton').classList.remove('hidden');
-                    document.getElementById('compass').classList.remove('active');
-                    isCompassActive = false;
-                    clearTimeout(countdownTimer);
-                    console.log('Audio playing via Web Audio API:', audioUrl);
-                    showMessage("Harmony sound playing. Tap 'Stop Sound' to pause.", 5000);
-                })
-                .catch(e => {
-                    console.error('Web Audio API failed:', e);
-                    showError("Failed to play audio. Please tap the compass again to retry.");
-                });
+            audio.play().then(() => {
+                isPlaying = true;
+                localStorage.setItem('cosmicAudioPlaying', 'true');
+                document.getElementById('stopSoundButton').classList.remove('hidden');
+                document.getElementById('playButton').style.display = 'none';
+                console.log('Audio playing');
+            }).catch(e => {
+                console.error('Audio play failed:', e);
+                const results = document.getElementById('results');
+                if (!document.getElementById('playSoundMessage')) {
+                    results.innerHTML += `
+                        <div id="playSoundMessage" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">
+                            ${isIOS ? "Tap Play Harmony button to start sound (iOS requires interaction)." : "Tap Play Harmony button to start sound."}
+                        </div>`;
+                    setTimeout(() => document.getElementById('playSoundMessage')?.remove(), 5000);
+                }
+            });
         }
 
         function stopHarmonySound() {
@@ -808,25 +721,10 @@
                 const audio = document.getElementById('harmonyAudio');
                 audio.pause();
                 audio.currentTime = 0;
-                if (window.webAudioSource) {
-                    try {
-                        window.webAudioSource.stop();
-                        window.webAudioGainNode.disconnect();
-                    } catch (e) {
-                        console.error('Error stopping Web Audio:', e);
-                    }
-                    window.webAudioSource = null;
-                    window.webAudioGainNode = null;
-                }
-                if (audioContext) {
-                    audioContext.close();
-                    audioContext = null;
-                }
                 isPlaying = false;
                 localStorage.setItem('cosmicAudioPlaying', 'false');
                 document.getElementById('stopSoundButton').classList.add('hidden');
                 console.log('Audio stopped');
-                showMessage("Sound stopped.", 5000);
             }
         }
 
@@ -851,22 +749,11 @@
             if (document.visibilityState === 'hidden') {
                 if (compassEventListener) {
                     window.removeEventListener('deviceorientation', compassEventListener);
-                    compassEventListener = null;
-                    console.log('Compass listener removed on visibility hidden');
-                }
-                clearTimeout(countdownTimer);
-                if (audioContext && audioContext.state !== 'suspended') {
-                    audioContext.suspend();
-                    console.log('Audio context suspended');
                 }
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
                 if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                    if (audioContext && audioContext.state === 'suspended') {
-                        audioContext.resume();
-                        console.log('Audio context resumed');
-                    }
-                    showMessage("Tap the flashing compass to resume sound.", 8000);
+                    playHarmonySound();
                 }
             }
         });
@@ -886,14 +773,19 @@
         });
 
         window.addEventListener('load', () => {
-            const audio = document.getElementById('harmonyAudio');
-            audio.addEventListener('loadedmetadata', () => {
-                console.log('Audio metadata loaded:', audio.src);
-            });
-            audio.addEventListener('error', (e) => {
-                console.error('Audio element error:', e.target.error.code, e.target.error.message, 'Source:', audio.src);
-                showError(`Failed to load audio: ${e.target.error.message || 'Unknown error'}. Tap the compass to try again.`);
-            });
+            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
+                const audio = document.getElementById('harmonyAudio');
+                audio.src = localStorage.getItem('cosmicAudioSrc');
+                audio.load();
+                audio.play().then(() => {
+                    isPlaying = true;
+                    document.getElementById('stopSoundButton').classList.remove('hidden');
+                    console.log('Audio resumed');
+                }).catch(e => {
+                    console.error('Resuming audio failed:', e);
+                    playHarmonySound();
+                });
+            }
         });
 
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -913,14 +805,13 @@
                 });
             }
         });
-
         document.getElementById('calculateBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('permissionButton').addEventListener(eventType, tryGetPermissions);
         document.getElementById('retryButton').addEventListener(eventType, tryGetPermissions);
         document.getElementById('shareButton').addEventListener(eventType, shareCosmicDegree);
         document.getElementById('retryFetchBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('stopSoundButton').addEventListener(eventType, stopHarmonySound);
-        document.getElementById('compass').addEventListener(eventType, playHarmonySound);
+        document.getElementById('playButton').addEventListener(eventType, playHarmonySound);
 
         const inputs = [document.getElementById('year'), document.getElementById('month'), document.getElementById('day')];
         inputs.forEach((input, index) => {
