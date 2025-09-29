@@ -42,7 +42,7 @@
             z-index: 9999;
             display: none;
         }
-        /* 成功提示按钮 - 修改为按钮样式并延长显示时间 */
+        /* 成功提示按钮 - 改为可点击的按钮样式 */
         #successToast {
             position: fixed;
             top: 50%;
@@ -121,15 +121,6 @@
         #permissionModal button:hover {
             background-color: #3A80D2;
         }
-        /* 重叠后罗盘按钮样式 - 已取消该功能 */
-        #compass.compass-active {
-            cursor: default;
-            box-shadow: none;
-            transition: none;
-        }
-        #compass.compass-active:hover {
-            transform: none;
-        }
         /* 音浴引导文本 */
         #soundBathGuide {
             text-align: center;
@@ -150,10 +141,6 @@
             color: #4A90E2;
             font-weight: bold;
             text-decoration: underline;
-        }
-        /* 按钮提示文本 - 已取消该功能 */
-        #actionPrompt {
-            display: none;
         }
         /* 原有样式保留 */
         header {
@@ -239,14 +226,14 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
-        /* 普通指南针指针容器 - 使用参考的CSS样式 */
+        /* 普通指南针指针容器 - 确保实时响应 */
         .compass-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.1s ease-out; /* 快速响应 */
             z-index: 10;
         }
         .needle {
@@ -296,14 +283,14 @@
             z-index: 5;
             pointer-events: none;
         }
-        /* 相机视角指南针指针容器 - 使用参考的CSS样式 */
+        /* 相机视角指南针指针容器 - 确保实时响应 */
         .camera-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.1s ease-out; /* 快速响应 */
             z-index: 10;
         }
         .camera-needle {
@@ -419,7 +406,7 @@
 <body>
     <!-- 烟花容器 -->
     <div id="confetti-container"></div>
-    <!-- 成功提示按钮 - 改为可点击的按钮 -->
+    <!-- 成功提示按钮 - 可点击跳转，1分钟后自动消失 -->
     <div id="successToast" onclick="window.open('https://www.yourluckycompass.com/sound_bath', '_blank')">
         <h3>Congratulations!</h3>
         <p>You've found your lucky direction. Click here to start Sound Bath →</p>
@@ -442,8 +429,6 @@
     <div id="soundBathGuide">
         <p>Now you can access the Sound Bath & Mindfulness feature! Face your lucky direction, sit comfortably, listen to calming sounds, adjust your breath, and feel the connection between your inner self and the universe. <a href="https://www.yourluckycompass.com/sound_bath" target="_blank">Go to Sound Bath</a></p>
     </div>
-    <!-- 按钮提示文本 - 已取消 -->
-    <div id="actionPrompt">Click here to enter a state of harmony and connect with the universe's energy</div>
 
     <header>
         <h1 class="text-3xl md:text-4xl font-bold">Unlock Your Cosmic Compass</h1>
@@ -521,7 +506,6 @@
                 <div class="needle">↑</div>
                 <div class="lucky-text">LUCKY</div>
             </div>
-            <!-- 取消指南针上的按钮 -->
             <button id="actionButton">Enter Harmony</button>
         </div>
 
@@ -552,8 +536,8 @@
         let currentJoyAngle = 0;
         let rotationHintAdded = false;
         let deferredPrompt;
-        let isAligned = false;
-        let actionButtonTimeout = null; // 用于控制按钮显示时间
+        let successToastTimeout = null; // 控制条幅自动消失的计时器
+        let isToastVisible = false; // 标记条幅是否正在显示
         let forceShowPermissionModal = true;
 
         // 调试日志
@@ -595,13 +579,11 @@
             permissionGuide.style.display = permissionGuide.style.display === 'none' ? 'block' : 'none';
         });
 
-        // 烟花动画 - 延长显示时间
+        // 烟花动画 - 延长显示时间，不阻塞指南针运动
         function fireConfetti() {
-            if (isAligned) return;
-            isAligned = true;
             confettiContainer.style.display = 'block';
 
-            // 延长烟花持续时间到5秒
+            // 烟花持续5秒，粒子自然消失
             const duration = 5000;
             const end = Date.now() + duration;
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
@@ -621,22 +603,32 @@
                 if (Date.now() < end) {
                     requestAnimationFrame(frame);
                 } else {
-                    // 烟花结束后不立即隐藏容器，让最后粒子自然消失
+                    // 烟花结束后延迟1秒隐藏容器，保留粒子消散效果
                     setTimeout(() => {
                         confettiContainer.style.display = 'none';
                     }, 1000);
                 }
             }
             frame();
+        }
 
-            // 显示成功提示按钮，延长显示时间到10秒
+        // 显示成功条幅（1分钟后自动消失）
+        function showSuccessToast() {
+            // 如果条幅已显示，先清除旧计时器
+            if (successToastTimeout) {
+                clearTimeout(successToastTimeout);
+            }
+            
+            // 显示条幅
             successToast.style.display = 'block';
-            setTimeout(() => {
-                if (isAligned) {
-                    // 可以选择不自动隐藏，让用户手动点击
-                    // successToast.style.display = 'none';
-                }
-            }, 10000); // 10秒后自动隐藏（如果需要）
+            isToastVisible = true;
+
+            // 1分钟（60000毫秒）后自动隐藏
+            successToastTimeout = setTimeout(() => {
+                successToast.style.display = 'none';
+                isToastVisible = false;
+                successToastTimeout = null;
+            }, 60000);
         }
 
         function showError(message) {
@@ -793,7 +785,7 @@
             }
         }
 
-        // 指南针旋转逻辑
+        // 核心修改：指南针实时响应，分离对齐检测与条幅显示
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
                 showError("Compass not supported on this device.");
@@ -810,24 +802,23 @@
                     }
                 }
 
-                // 指南针事件处理函数
+                // 指南针事件处理函数：仅负责实时旋转，不阻塞任何逻辑
                 compassEventListener = function(event) {
                     const alpha = event.alpha || 0; // 设备当前旋转角度（0-360°）
                     
-                    // 计算目标旋转角度（结合用户的“宇宙度数”currentJoyAngle）
-                    // 针对iOS设备调整计算方式
+                    // 计算目标旋转角度（适配iOS/安卓）
                     let adjustedAngle = isIOS ? 
                         (alpha + currentJoyAngle) % 360 : 
                         (360 - alpha + currentJoyAngle) % 360;
                     
-                    // 关键：处理角度“跳变”
+                    // 处理角度跳变（避免指针反向旋转一圈）
                     const angleDiff = adjustedAngle - lastAdjustedAngle;
                     if (angleDiff > 180) adjustedAngle -= 360;
                     else if (angleDiff < -180) adjustedAngle += 360;
                     
                     lastAdjustedAngle = adjustedAngle;
                     
-                    // 应用旋转角度到指针
+                    // 实时更新指针旋转（无延迟）
                     const compassNeedle = document.querySelector('.compass-needle-container');
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
@@ -837,19 +828,23 @@
                         cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     }
 
-                    // 更新角度显示
+                    // 实时更新角度显示数字
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
-                    // 当角度对齐时显示烟花和成功提示按钮
+                    // 角度对齐检测（误差≤10°）
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
-                    if (diff <= 10 && !isAligned) {
-                        fireConfetti();
+                    if (diff <= 10) {
+                        // 若条幅未显示，触发烟花和条幅
+                        if (!isToastVisible) {
+                            fireConfetti();
+                            showSuccessToast();
+                        }
                     }
                 };
 
-                // 绑定事件
+                // 绑定事件（无防抖，确保实时响应）
                 window.addEventListener("deviceorientation", compassEventListener, { passive: true });
-                console.log('Compass listener added with direct response');
+                console.log('Compass listener added with real-time response');
                 if (!rotationHintAdded) {
                     showMessage("Rotate your phone to align with the LUCKY marker!");
                     rotationHintAdded = true;
@@ -921,6 +916,7 @@
             }
         }
 
+        // 页面可见性变化时重新绑定指南针事件（确保继续运动）
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 if (compassEventListener) {
@@ -938,6 +934,10 @@
             const video = document.getElementById('video');
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            // 清除条幅计时器
+            if (successToastTimeout) {
+                clearTimeout(successToastTimeout);
             }
         });
 
@@ -959,6 +959,7 @@
             }
         });
 
+        // 绑定按钮事件
         document.getElementById('calculateBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('permissionButton').addEventListener(eventType, tryGetPermissions);
         document.getElementById('retryButton').addEventListener(eventType, () => {
@@ -968,6 +969,7 @@
         document.getElementById('shareButton').addEventListener(eventType, shareCosmicDegree);
         document.getElementById('retryFetchBtn').addEventListener(eventType, calculateBazi);
 
+        // 输入框验证逻辑
         const inputs = [document.getElementById('year'), document.getElementById('month'), document.getElementById('day')];
         inputs.forEach((input, index) => {
             input.addEventListener('input', () => {
