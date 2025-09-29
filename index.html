@@ -42,13 +42,14 @@
             z-index: 9999;
             display: none;
         }
-        /* 成功提示弹窗 */
+        /* 成功提示按钮 - 修改为按钮样式并延长显示时间 */
         #successToast {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: #FFD700;
+            color: #333;
             padding: 25px 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
@@ -56,9 +57,17 @@
             z-index: 10000;
             display: none;
             max-width: 85%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: inherit;
+        }
+        #successToast:hover {
+            background-color: #FFC300;
+            transform: translate(-50%, -50%) scale(1.05);
         }
         #successToast h3 {
-            color: #d97706;
+            color: #333;
             margin: 0 0 10px;
             font-size: 22px;
         }
@@ -112,14 +121,14 @@
         #permissionModal button:hover {
             background-color: #3A80D2;
         }
-        /* 重叠后罗盘按钮样式 */
+        /* 重叠后罗盘按钮样式 - 已取消该功能 */
         #compass.compass-active {
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-            transition: all 0.3s ease;
+            cursor: default;
+            box-shadow: none;
+            transition: none;
         }
         #compass.compass-active:hover {
-            transform: scale(1.03);
+            transform: none;
         }
         /* 音浴引导文本 */
         #soundBathGuide {
@@ -142,13 +151,8 @@
             font-weight: bold;
             text-decoration: underline;
         }
-        /* 按钮提示文本 */
+        /* 按钮提示文本 - 已取消该功能 */
         #actionPrompt {
-            text-align: center;
-            color: #4A90E2;
-            font-weight: 500;
-            margin: 10px 0;
-            font-size: 16px;
             display: none;
         }
         /* 原有样式保留 */
@@ -258,25 +262,9 @@
             margin-top: 5px;
             text-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
+        /* 取消指南针上的按钮 */
         #actionButton {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #FFD700;
-            color: #333;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            display: none;
-            z-index: 15;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-        #actionButton:hover {
-            background-color: #FFC300;
-            transform: translate(-50%, -50%) scale(1.1);
+            display: none !important;
         }
         #camera {
             width: 90vw;
@@ -413,10 +401,6 @@
             .lucky-text, .camera-lucky-text {
                 font-size: 20px;
             }
-            #actionButton {
-                padding: 12px 25px;
-                font-size: 16px;
-            }
             #successToast h3 {
                 font-size: 20px;
             }
@@ -429,20 +413,16 @@
             #permissionModal p {
                 font-size: 14px;
             }
-            #actionPrompt {
-                font-size: 14px;
-                padding: 0 10px;
-            }
         }
     </style>
 </head>
 <body>
     <!-- 烟花容器 -->
     <div id="confetti-container"></div>
-    <!-- 成功提示弹窗 -->
-    <div id="successToast">
+    <!-- 成功提示按钮 - 改为可点击的按钮 -->
+    <div id="successToast" onclick="window.open('https://www.yourluckycompass.com/sound_bath', '_blank')">
         <h3>Congratulations!</h3>
-        <p>You have found your unique lucky direction.</p>
+        <p>You've found your lucky direction. Click here to start Sound Bath →</p>
     </div>
     <!-- 权限引导弹窗 -->
     <div id="permissionModal">
@@ -462,7 +442,7 @@
     <div id="soundBathGuide">
         <p>Now you can access the Sound Bath & Mindfulness feature! Face your lucky direction, sit comfortably, listen to calming sounds, adjust your breath, and feel the connection between your inner self and the universe. <a href="https://www.yourluckycompass.com/sound_bath" target="_blank">Go to Sound Bath</a></p>
     </div>
-    <!-- 按钮提示文本 -->
+    <!-- 按钮提示文本 - 已取消 -->
     <div id="actionPrompt">Click here to enter a state of harmony and connect with the universe's energy</div>
 
     <header>
@@ -541,6 +521,7 @@
                 <div class="needle">↑</div>
                 <div class="lucky-text">LUCKY</div>
             </div>
+            <!-- 取消指南针上的按钮 -->
             <button id="actionButton">Enter Harmony</button>
         </div>
 
@@ -602,8 +583,6 @@
         const successToast = document.getElementById('successToast');
         const compass = document.getElementById('compass');
         const soundBathGuide = document.getElementById('soundBathGuide');
-        const actionPrompt = document.getElementById('actionPrompt');
-        const actionButton = document.getElementById('actionButton');
 
         // 权限引导弹窗逻辑
         agreePermissionBtn.addEventListener(eventType, async () => {
@@ -616,13 +595,14 @@
             permissionGuide.style.display = permissionGuide.style.display === 'none' ? 'block' : 'none';
         });
 
-        // 烟花动画
+        // 烟花动画 - 延长显示时间
         function fireConfetti() {
             if (isAligned) return;
             isAligned = true;
             confettiContainer.style.display = 'block';
 
-            const duration = 3000;
+            // 延长烟花持续时间到5秒
+            const duration = 5000;
             const end = Date.now() + duration;
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
 
@@ -641,46 +621,22 @@
                 if (Date.now() < end) {
                     requestAnimationFrame(frame);
                 } else {
-                    confettiContainer.style.display = 'none';
-                    successToast.style.display = 'block';
+                    // 烟花结束后不立即隐藏容器，让最后粒子自然消失
                     setTimeout(() => {
-                        successToast.style.display = 'none';
-                        initCompassAsButton();
-                    }, 3000);
+                        confettiContainer.style.display = 'none';
+                    }, 1000);
                 }
             }
             frame();
-        }
 
-        // 罗盘转换为按钮逻辑
-        function initCompassAsButton() {
-            // 先移除旧事件
-            compass.removeEventListener(eventType, handleCompassClick);
-            compass.removeEventListener('keydown', handleCompassKeydown);
-
-            // 统一跳转函数
-            function handleCompassClick() {
-                window.open('https://www.yourluckycompass.com/sound_bath', '_blank');
-            }
-            function handleCompassKeydown(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleCompassClick();
+            // 显示成功提示按钮，延长显示时间到10秒
+            successToast.style.display = 'block';
+            setTimeout(() => {
+                if (isAligned) {
+                    // 可以选择不自动隐藏，让用户手动点击
+                    // successToast.style.display = 'none';
                 }
-            }
-
-            // 添加新事件与无障碍属性
-            compass.classList.add('compass-active');
-            compass.setAttribute('role', 'button');
-            compass.setAttribute('aria-label', 'Go to Sound Bath');
-            compass.tabIndex = 0;
-            compass.addEventListener(eventType, handleCompassClick);
-            compass.addEventListener('keydown', handleCompassKeydown);
-
-            // 显示引导文本并隐藏按钮
-            soundBathGuide.style.display = 'block';
-            actionButton.style.display = 'none';
-            actionPrompt.style.display = 'none';
+            }, 10000); // 10秒后自动隐藏（如果需要）
         }
 
         function showError(message) {
@@ -837,7 +793,7 @@
             }
         }
 
-        // 核心修改：使用提供的指南针旋转逻辑，移除防抖和过度平滑处理
+        // 指南针旋转逻辑
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
                 showError("Compass not supported on this device.");
@@ -854,7 +810,7 @@
                     }
                 }
 
-                // 使用提供的指南针事件处理函数，确保最高响应速度
+                // 指南针事件处理函数
                 compassEventListener = function(event) {
                     const alpha = event.alpha || 0; // 设备当前旋转角度（0-360°）
                     
@@ -864,14 +820,14 @@
                         (alpha + currentJoyAngle) % 360 : 
                         (360 - alpha + currentJoyAngle) % 360;
                     
-                    // 关键：处理角度“跳变”（例如从 359° 直接到 0° 时，避免指针反向旋转一圈）
+                    // 关键：处理角度“跳变”
                     const angleDiff = adjustedAngle - lastAdjustedAngle;
-                    if (angleDiff > 180) adjustedAngle -= 360;  // 超过180°时，反向计算（走短路径）
+                    if (angleDiff > 180) adjustedAngle -= 360;
                     else if (angleDiff < -180) adjustedAngle += 360;
                     
-                    lastAdjustedAngle = adjustedAngle; // 记录上一次角度，用于下一次对比
+                    lastAdjustedAngle = adjustedAngle;
                     
-                    // 应用旋转角度到指针（实际运动由 CSS 过渡控制）
+                    // 应用旋转角度到指针
                     const compassNeedle = document.querySelector('.compass-needle-container');
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
@@ -884,30 +840,14 @@
                     // 更新角度显示
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
-                    // 当角度对齐时显示按钮，并设置1分钟后隐藏
+                    // 当角度对齐时显示烟花和成功提示按钮
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     if (diff <= 10 && !isAligned) {
-                        // 如果已有计时器则清除
-                        if (actionButtonTimeout) {
-                            clearTimeout(actionButtonTimeout);
-                        }
-                        
-                        actionButton.style.display = 'block';
-                        actionPrompt.style.display = 'block';
-                        
-                        // 设置1分钟后隐藏
-                        actionButtonTimeout = setTimeout(() => {
-                            if (!isAligned) {
-                                actionButton.style.display = 'none';
-                                actionPrompt.style.display = 'none';
-                            }
-                        }, 60000); // 60000毫秒 = 1分钟
-                        
                         fireConfetti();
                     }
                 };
 
-                // 直接绑定事件，不使用防抖，确保最高响应速度
+                // 绑定事件
                 window.addEventListener("deviceorientation", compassEventListener, { passive: true });
                 console.log('Compass listener added with direct response');
                 if (!rotationHintAdded) {
@@ -980,11 +920,6 @@
                 showError('Sharing failed');
             }
         }
-
-        // 按钮点击事件 - 跳转到音浴页面
-        actionButton.addEventListener(eventType, () => {
-            window.open('https://www.yourluckycompass.com/sound_bath', '_blank');
-        });
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
