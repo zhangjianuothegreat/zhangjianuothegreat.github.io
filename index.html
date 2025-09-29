@@ -235,13 +235,14 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
+        /* 普通指南针指针容器 - 使用参考的CSS样式 */
         .compass-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.1s ease-out; /* 加速指针响应 */
+            transition: transform 0.3s ease-out;
             z-index: 10;
         }
         .needle {
@@ -307,13 +308,14 @@
             z-index: 5;
             pointer-events: none;
         }
+        /* 相机视角指南针指针容器 - 使用参考的CSS样式 */
         .camera-needle-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.1s ease-out; /* 加速指针响应 */
+            transition: transform 0.3s ease-out;
             z-index: 10;
         }
         .camera-needle {
@@ -565,15 +567,13 @@
 
     <script>
         let compassEventListener = null;
-        let lastAdjustedAngle = 0;
+        let lastAdjustedAngle = 0; // 用于记录上一次角度，处理角度跳变
         let currentJoyAngle = 0;
         let rotationHintAdded = false;
         let deferredPrompt;
         let isAligned = false;
         let actionButtonTimeout = null; // 用于控制按钮显示时间
         let forceShowPermissionModal = true;
-        // 提高灵敏度：降低平滑因子
-        const SMOOTHING_FACTOR = 0.5;
 
         // 调试日志
         console.log('Page loaded. Checking device orientation support...');
@@ -837,14 +837,7 @@
             }
         }
 
-        function debounce(func, wait) {
-            let timeout;
-            return function (...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
+        // 核心修改：使用提供的指南针旋转逻辑，移除防抖和过度平滑处理
         async function requestCompassPermission() {
             if (!("DeviceOrientationEvent" in window)) {
                 showError("Compass not supported on this device.");
@@ -861,37 +854,38 @@
                     }
                 }
 
-                // 减少防抖时间，提高响应速度
-                compassEventListener = debounce(function(event) {
-                    if (!event.alpha && event.alpha !== 0) {
-                        console.log('No valid alpha value received');
-                        return;
-                    }
-
-                    const alpha = event.alpha;
-                    let adjustedAngle = isIOS ? (alpha + currentJoyAngle) % 360 : (360 - alpha + currentJoyAngle) % 360;
+                // 使用提供的指南针事件处理函数，确保最高响应速度
+                compassEventListener = function(event) {
+                    const alpha = event.alpha || 0; // 设备当前旋转角度（0-360°）
+                    
+                    // 计算目标旋转角度（结合用户的“宇宙度数”currentJoyAngle）
+                    // 针对iOS设备调整计算方式
+                    let adjustedAngle = isIOS ? 
+                        (alpha + currentJoyAngle) % 360 : 
+                        (360 - alpha + currentJoyAngle) % 360;
+                    
+                    // 关键：处理角度“跳变”（例如从 359° 直接到 0° 时，避免指针反向旋转一圈）
                     const angleDiff = adjustedAngle - lastAdjustedAngle;
-                    if (angleDiff > 180) adjustedAngle -= 360;
+                    if (angleDiff > 180) adjustedAngle -= 360;  // 超过180°时，反向计算（走短路径）
                     else if (angleDiff < -180) adjustedAngle += 360;
-
-                    // 提高灵敏度：减少平滑效果
-                    const smoothedAngle = lastAdjustedAngle + SMOOTHING_FACTOR * (adjustedAngle - lastAdjustedAngle);
-                    lastAdjustedAngle = smoothedAngle;
-
+                    
+                    lastAdjustedAngle = adjustedAngle; // 记录上一次角度，用于下一次对比
+                    
+                    // 应用旋转角度到指针（实际运动由 CSS 过渡控制）
                     const compassNeedle = document.querySelector('.compass-needle-container');
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
-                        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        compassNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     }
                     if (cameraNeedle) {
-                        cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
+                        cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${adjustedAngle}deg)`;
                     }
 
+                    // 更新角度显示
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
-                    const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
-                    
                     // 当角度对齐时显示按钮，并设置1分钟后隐藏
+                    const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
                     if (diff <= 10 && !isAligned) {
                         // 如果已有计时器则清除
                         if (actionButtonTimeout) {
@@ -911,10 +905,11 @@
                         
                         fireConfetti();
                     }
-                }, 30); // 减少防抖等待时间
+                };
 
+                // 直接绑定事件，不使用防抖，确保最高响应速度
                 window.addEventListener("deviceorientation", compassEventListener, { passive: true });
-                console.log('Compass listener added');
+                console.log('Compass listener added with direct response');
                 if (!rotationHintAdded) {
                     showMessage("Rotate your phone to align with the LUCKY marker!");
                     rotationHintAdded = true;
