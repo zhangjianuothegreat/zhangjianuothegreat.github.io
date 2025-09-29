@@ -10,7 +10,7 @@
         default-src 'self';
         script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
         connect-src 'self' https://lucky-backend-ten.vercel.app https://raw.githubusercontent.com;
-        media-src 'self' blob: https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/*;
+        media-src 'self' blob:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
     ">
@@ -142,6 +142,15 @@
             font-weight: bold;
             text-decoration: underline;
         }
+        /* 按钮提示文本 */
+        #actionPrompt {
+            text-align: center;
+            color: #4A90E2;
+            font-weight: 500;
+            margin: 10px 0;
+            font-size: 16px;
+            display: none;
+        }
         /* 原有样式保留 */
         header {
             background-color: #4A90E2;
@@ -232,7 +241,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.1s ease-out; /* 加速指针响应 */
             z-index: 10;
         }
         .needle {
@@ -248,7 +257,7 @@
             margin-top: 5px;
             text-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
-        #playButton {
+        #actionButton {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -264,7 +273,7 @@
             z-index: 15;
             transition: background-color 0.3s, transform 0.3s;
         }
-        #playButton:hover {
+        #actionButton:hover {
             background-color: #FFC300;
             transform: translate(-50%, -50%) scale(1.1);
         }
@@ -304,7 +313,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.1s ease-out; /* 加速指针响应 */
             z-index: 10;
         }
         .camera-needle {
@@ -402,7 +411,7 @@
             .lucky-text, .camera-lucky-text {
                 font-size: 20px;
             }
-            #playButton {
+            #actionButton {
                 padding: 12px 25px;
                 font-size: 16px;
             }
@@ -418,21 +427,22 @@
             #permissionModal p {
                 font-size: 14px;
             }
-        }
-        audio {
-            display: none;
+            #actionPrompt {
+                font-size: 14px;
+                padding: 0 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 新增：烟花容器 -->
+    <!-- 烟花容器 -->
     <div id="confetti-container"></div>
-    <!-- 新增：成功提示弹窗 -->
+    <!-- 成功提示弹窗 -->
     <div id="successToast">
         <h3>Congratulations!</h3>
         <p>You have found your unique lucky direction.</p>
     </div>
-    <!-- 新增：权限引导弹窗（默认显示，强制交互） -->
+    <!-- 权限引导弹窗 -->
     <div id="permissionModal">
         <div class="modal-content">
             <h3>Need Your Permission</h3>
@@ -446,10 +456,12 @@
             </p>
         </div>
     </div>
-    <!-- 新增：音浴引导文本 -->
+    <!-- 音浴引导文本 -->
     <div id="soundBathGuide">
         <p>Now you can access the Sound Bath & Mindfulness feature! Face your lucky direction, sit comfortably, listen to calming sounds, adjust your breath, and feel the connection between your inner self and the universe. <a href="https://www.yourluckycompass.com/sound_bath" target="_blank">Go to Sound Bath</a></p>
     </div>
+    <!-- 按钮提示文本 -->
+    <div id="actionPrompt">Click here to enter a state of harmony and connect with the universe's energy</div>
 
     <header>
         <h1 class="text-3xl md:text-4xl font-bold">Unlock Your Cosmic Compass</h1>
@@ -468,7 +480,7 @@
 
     <section>
         <div class="card">
-            <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Sync with a soothing Sound Bath and rotate your phone to align with the cosmos!</p>
+            <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Rotate your phone to align with the cosmos!</p>
             <form class="flex flex-col gap-4 max-w-md mx-auto">
                 <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
@@ -527,7 +539,7 @@
                 <div class="needle">↑</div>
                 <div class="lucky-text">LUCKY</div>
             </div>
-            <button id="playButton">Play Harmony</button>
+            <button id="actionButton">Enter Harmony</button>
         </div>
 
         <div id="camera">
@@ -543,7 +555,6 @@
         <div class="flex flex-col items-center gap-3 mt-4">
             <button id="installButton" class="hidden">Install App</button>
             <button id="shareButton">Share Your Cosmic Degree</button>
-            <button id="stopSoundButton" class="hidden">Stop Sound</button>
         </div>
     </section>
 
@@ -552,48 +563,17 @@
         <p>© 2025 Your Lucky Compass</p>
     </footer>
 
-    <audio id="harmonyAudio" preload="metadata" playsinline loop></audio>
-
     <script>
         let compassEventListener = null;
         let lastAdjustedAngle = 0;
         let currentJoyAngle = 0;
         let rotationHintAdded = false;
         let deferredPrompt;
-        let isPlaying = false;
-        let smoothedAngle = 0;
         let isAligned = false;
-        let forceShowPermissionModal = true; // 新增：权限弹窗强制显示开关
-        const SMOOTHING_FACTOR = 0.2;
-        const audioFiles = [
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bamboo%20Whisper.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Bering%20Mist.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Blizzard%20Trek.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Brook%20Murmur.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cascade%20Song.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Chiming%20Breeze.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Cicada%20Summer.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Deep%20Dive.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Drywood%20Echo.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ember%20Glow.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Falls%20Serenade.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Frog%20Chorus.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Gentle%20Drizzle.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Harbor%20Whispers.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Meadow%20Wander.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Monsoon%20Breath.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Ocean%20Pulse.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Seagull%20Shore.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Silent%20Clarity.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Spring%20Shower.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Starlit%20Night.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Streamside%20Life.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Sumatra%20Rain.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Temple%20Stillness.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Thunder%20Veil.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Verdant%20Canopy.MP3',
-            'https://raw.githubusercontent.com/zhangjianuothegreat/yourluckycompass-frontend/main/sound-bath/audio/Wheat%20Sway.MP3'
-        ];
+        let actionButtonTimeout = null; // 用于控制按钮显示时间
+        let forceShowPermissionModal = true;
+        // 提高灵敏度：降低平滑因子
+        const SMOOTHING_FACTOR = 0.5;
 
         // 调试日志
         console.log('Page loaded. Checking device orientation support...');
@@ -613,7 +593,7 @@
         const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
         const eventType = window.PointerEvent ? 'pointerdown' : (isMobile ? 'touchstart' : 'click');
 
-        // 新增：获取DOM元素
+        // 获取DOM元素
         const permissionModal = document.getElementById('permissionModal');
         const agreePermissionBtn = document.getElementById('agreePermissionBtn');
         const showGuideBtn = document.getElementById('showGuideBtn');
@@ -622,8 +602,10 @@
         const successToast = document.getElementById('successToast');
         const compass = document.getElementById('compass');
         const soundBathGuide = document.getElementById('soundBathGuide');
+        const actionPrompt = document.getElementById('actionPrompt');
+        const actionButton = document.getElementById('actionButton');
 
-        // 新增：权限引导弹窗逻辑
+        // 权限引导弹窗逻辑
         agreePermissionBtn.addEventListener(eventType, async () => {
             permissionModal.style.display = 'none';
             if (currentJoyAngle !== 0) {
@@ -634,30 +616,30 @@
             permissionGuide.style.display = permissionGuide.style.display === 'none' ? 'block' : 'none';
         });
 
-        // 修复：全屏烟花动画（持续3秒，满屏粒子）
+        // 烟花动画
         function fireConfetti() {
             if (isAligned) return;
             isAligned = true;
             confettiContainer.style.display = 'block';
 
-            const duration = 3000; // 烟花持续时间
+            const duration = 3000;
             const end = Date.now() + duration;
             const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
 
             function frame() {
                 confetti({
-                    particleCount: 10, // 每帧生成10个粒子
-                    angle: Math.random() * 360, // 随机角度
-                    spread: 100, // 扩散范围（满屏）
-                    origin: { x: Math.random(), y: Math.random() - 0.2 }, // 随机起源点（偏上，模拟下落）
+                    particleCount: 10,
+                    angle: Math.random() * 360,
+                    spread: 100,
+                    origin: { x: Math.random(), y: Math.random() - 0.2 },
                     colors: colors,
-                    scalar: Math.random() * 5 + 5, // 粒子大小随机
-                    decay: 0.92, // 粒子消失速度
-                    drift: Math.random() - 0.5 // 粒子随机漂移
+                    scalar: Math.random() * 5 + 5,
+                    decay: 0.92,
+                    drift: Math.random() - 0.5
                 });
 
                 if (Date.now() < end) {
-                    requestAnimationFrame(frame); // 持续生成粒子
+                    requestAnimationFrame(frame);
                 } else {
                     confettiContainer.style.display = 'none';
                     successToast.style.display = 'block';
@@ -667,27 +649,27 @@
                     }, 3000);
                 }
             }
-            frame(); // 启动动画
+            frame();
         }
 
-        // 修复：罗盘转换为按钮逻辑（合并事件，避免重复绑定）
+        // 罗盘转换为按钮逻辑
         function initCompassAsButton() {
-            // 1. 先移除旧事件（避免重复绑定）
+            // 先移除旧事件
             compass.removeEventListener(eventType, handleCompassClick);
             compass.removeEventListener('keydown', handleCompassKeydown);
 
-            // 2. 统一跳转函数
+            // 统一跳转函数
             function handleCompassClick() {
                 window.open('https://www.yourluckycompass.com/sound_bath', '_blank');
             }
             function handleCompassKeydown(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault(); // 阻止默认行为（如页面滚动）
+                    e.preventDefault();
                     handleCompassClick();
                 }
             }
 
-            // 3. 添加新事件与无障碍属性
+            // 添加新事件与无障碍属性
             compass.classList.add('compass-active');
             compass.setAttribute('role', 'button');
             compass.setAttribute('aria-label', 'Go to Sound Bath');
@@ -695,9 +677,10 @@
             compass.addEventListener(eventType, handleCompassClick);
             compass.addEventListener('keydown', handleCompassKeydown);
 
-            // 4. 显示引导文本并隐藏播放按钮
+            // 显示引导文本并隐藏按钮
             soundBathGuide.style.display = 'block';
-            document.getElementById('playButton').style.display = 'none';
+            actionButton.style.display = 'none';
+            actionPrompt.style.display = 'none';
         }
 
         function showError(message) {
@@ -789,20 +772,8 @@
 
                 currentJoyAngle = parseFloat(data.angle);
                 lastAdjustedAngle = currentJoyAngle % 360;
-                smoothedAngle = lastAdjustedAngle;
                 document.getElementById('degree').textContent = `0° / ${currentJoyAngle}°`;
                 document.getElementById('permissionNotice').style.display = 'block';
-
-                const randomAudio = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-                const audio = document.getElementById('harmonyAudio');
-                audio.src = randomAudio;
-                audio.load();
-                audio.onerror = () => {
-                    showError("Failed to load audio. Please try again or check your network.");
-                    console.error('Audio load failed:', randomAudio);
-                };
-                localStorage.setItem('cosmicAudioSrc', randomAudio);
-                console.log('Audio set:', randomAudio);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
@@ -832,7 +803,7 @@
             }
         }
 
-        // 优化：权限申请逻辑（根据开关决定是否强制显示弹窗）
+        // 权限申请逻辑
         async function tryGetPermissions() {
             try {
                 const permissionButton = document.getElementById('permissionButton');
@@ -847,14 +818,12 @@
                         document.getElementById('camera').style.display = 'none';
                         console.log('Camera failed, hiding camera element');
                     }
-                    forceShowPermissionModal = false; // 授权成功，关闭强制显示
+                    forceShowPermissionModal = false;
                 } else {
                     retryButton.style.display = 'block';
-                    // 仅在“首次访问”或“用户主动点击重试”时显示弹窗
                     if (forceShowPermissionModal) {
                         permissionModal.style.display = 'flex';
                     } else {
-                        // 非首次访问，显示“轻量提示”而非全屏弹窗
                         showMessage("Compass permission is required. Please enable it in your device settings.");
                     }
                 }
@@ -892,6 +861,7 @@
                     }
                 }
 
+                // 减少防抖时间，提高响应速度
                 compassEventListener = debounce(function(event) {
                     if (!event.alpha && event.alpha !== 0) {
                         console.log('No valid alpha value received');
@@ -904,32 +874,44 @@
                     if (angleDiff > 180) adjustedAngle -= 360;
                     else if (angleDiff < -180) adjustedAngle += 360;
 
-                    smoothedAngle = smoothedAngle + SMOOTHING_FACTOR * (adjustedAngle - smoothedAngle);
-                    lastAdjustedAngle = adjustedAngle;
+                    // 提高灵敏度：减少平滑效果
+                    const smoothedAngle = lastAdjustedAngle + SMOOTHING_FACTOR * (adjustedAngle - lastAdjustedAngle);
+                    lastAdjustedAngle = smoothedAngle;
 
                     const compassNeedle = document.querySelector('.compass-needle-container');
                     const cameraNeedle = document.querySelector('.camera-needle-container');
                     if (compassNeedle) {
                         compassNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
-                        console.log('Compass needle rotated:', smoothedAngle);
                     }
                     if (cameraNeedle) {
                         cameraNeedle.style.transform = `translate(-50%, -50%) rotate(${smoothedAngle}deg)`;
-                        console.log('Camera needle rotated:', smoothedAngle);
                     }
 
                     document.getElementById('degree').textContent = `${Math.round(alpha)}° / ${currentJoyAngle}°`;
 
                     const diff = Math.min(Math.abs(alpha - currentJoyAngle), 360 - Math.abs(alpha - currentJoyAngle));
-                    const playButton = document.getElementById('playButton');
-                    if (diff <= 10 && !isPlaying && !isAligned) {
-                        playButton.style.display = 'block';
-                        localStorage.setItem('cosmicAudioPlaying', 'true');
+                    
+                    // 当角度对齐时显示按钮，并设置1分钟后隐藏
+                    if (diff <= 10 && !isAligned) {
+                        // 如果已有计时器则清除
+                        if (actionButtonTimeout) {
+                            clearTimeout(actionButtonTimeout);
+                        }
+                        
+                        actionButton.style.display = 'block';
+                        actionPrompt.style.display = 'block';
+                        
+                        // 设置1分钟后隐藏
+                        actionButtonTimeout = setTimeout(() => {
+                            if (!isAligned) {
+                                actionButton.style.display = 'none';
+                                actionPrompt.style.display = 'none';
+                            }
+                        }, 60000); // 60000毫秒 = 1分钟
+                        
                         fireConfetti();
-                    } else if (diff > 10 && !isPlaying) {
-                        playButton.style.display = 'none';
                     }
-                }, 50);
+                }, 30); // 减少防抖等待时间
 
                 window.addEventListener("deviceorientation", compassEventListener, { passive: true });
                 console.log('Compass listener added');
@@ -987,48 +969,6 @@
             }
         }
 
-        function playHarmonySound() {
-            if (isPlaying) return;
-
-            const audio = document.getElementById('harmonyAudio');
-            audio.volume = 0.3;
-            audio.play().then(() => {
-                isPlaying = true;
-                localStorage.setItem('cosmicAudioPlaying', 'true');
-                document.getElementById('stopSoundButton').classList.remove('hidden');
-                document.getElementById('playButton').style.display = 'none';
-                console.log('Audio playing');
-            }).catch(e => {
-                console.error('Audio play failed:', e);
-                const results = document.getElementById('results');
-                if (!document.getElementById('playSoundMessage')) {
-                    results.innerHTML += `
-                        <div id="playSoundMessage" class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">
-                            ${isIOS ? "Tap Play Harmony button again to start sound (iOS requires interaction)." : "Tap Play Harmony button to start sound."}
-                        </div>`;
-                    setTimeout(() => document.getElementById('playSoundMessage')?.remove(), 5000);
-                }
-            });
-            if (isIOS && window.AudioContext) {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume().then(() => console.log('AudioContext resumed'));
-                }
-            }
-        }
-
-        function stopHarmonySound() {
-            if (isPlaying) {
-                const audio = document.getElementById('harmonyAudio');
-                audio.pause();
-                audio.currentTime = 0;
-                isPlaying = false;
-                localStorage.setItem('cosmicAudioPlaying', 'false');
-                document.getElementById('stopSoundButton').classList.add('hidden');
-                console.log('Audio stopped');
-            }
-        }
-
         async function shareCosmicDegree() {
             try {
                 if (currentJoyAngle === 0) {
@@ -1046,6 +986,11 @@
             }
         }
 
+        // 按钮点击事件 - 跳转到音浴页面
+        actionButton.addEventListener(eventType, () => {
+            window.open('https://www.yourluckycompass.com/sound_bath', '_blank');
+        });
+
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 if (compassEventListener) {
@@ -1053,39 +998,16 @@
                 }
             } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
-                if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                    playHarmonySound();
-                }
             }
         });
 
         window.addEventListener('beforeunload', () => {
-            if (isPlaying) {
-                localStorage.setItem('cosmicAudioPlaying', 'true');
-                localStorage.setItem('cosmicAudioSrc', document.getElementById('harmonyAudio').src);
-            }
             if (compassEventListener) {
                 window.removeEventListener("deviceorientation", compassEventListener);
             }
             const video = document.getElementById('video');
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
-            }
-        });
-
-        window.addEventListener('load', () => {
-            if (localStorage.getItem('cosmicAudioPlaying') === 'true') {
-                const audio = document.getElementById('harmonyAudio');
-                audio.src = localStorage.getItem('cosmicAudioSrc');
-                audio.load();
-                audio.play().then(() => {
-                    isPlaying = true;
-                    document.getElementById('stopSoundButton').classList.remove('hidden');
-                    console.log('Audio resumed');
-                }).catch(e => {
-                    console.error('Resuming audio failed:', e);
-                    playHarmonySound();
-                });
             }
         });
 
@@ -1110,13 +1032,11 @@
         document.getElementById('calculateBtn').addEventListener(eventType, calculateBazi);
         document.getElementById('permissionButton').addEventListener(eventType, tryGetPermissions);
         document.getElementById('retryButton').addEventListener(eventType, () => {
-            forceShowPermissionModal = true; // 点击重试时强制显示弹窗
+            forceShowPermissionModal = true;
             tryGetPermissions();
         });
         document.getElementById('shareButton').addEventListener(eventType, shareCosmicDegree);
         document.getElementById('retryFetchBtn').addEventListener(eventType, calculateBazi);
-        document.getElementById('stopSoundButton').addEventListener(eventType, stopHarmonySound);
-        document.getElementById('playButton').addEventListener(eventType, playHarmonySound);
 
         const inputs = [document.getElementById('year'), document.getElementById('month'), document.getElementById('day')];
         inputs.forEach((input, index) => {
