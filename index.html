@@ -447,7 +447,7 @@
 
     <section>
         <div class="card">
-            <p class="mb-4 text-center">Tap into the universe’s energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Rotate your phone to align with the cosmos!</p>
+            <p class="mb-4 text-center">Tap into the universe's energy! Enter your birth date and timezone to reveal your personal cosmic degree—a star-guided key to inner peace and success. Rotate your phone to align with the cosmos!</p>
             <form class="flex flex-col gap-4 max-w-md mx-auto">
                 <input type="number" id="year" placeholder="Year (1900-2025)" min="1900" max="2025" required>
                 <p class="text-sm text-gray-500">* Year must be 1900-2025</p>
@@ -711,6 +711,9 @@
                         <p><b>Your Inner Spark:</b> ${data.personality}</p>
                         <p><b>Your Cosmic Whisper:</b> ${data.mystic_description}</p>
                         <p><b>Your Cosmic Degree:</b> ${data.angle}°</p>
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; line-height: 1.4;">
+                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">✨ ${data.trust_calculation}</div>
+                        </div>
                         <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
                             <p><b>Align with the Stars:</b> Rotate your phone to align with ${data.angle}°.</p>
                             <p><em>Pro tip: Use daily in a quiet moment!</em></p>
