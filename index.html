@@ -582,8 +582,8 @@
     </footer>
 
     <script>
-        // 🔥 新增：付费变量
-        const stripe = Stripe('pk_test_51PxxxYOUR_PUBLISHABLE_KEYxxx'); // 替换为你的Stripe Key
+        // 🔥 新增：付费变量 - 已替换你的真实Key！
+        const stripe = Stripe('pk_live_51SJSWiR70HXWM8fUQnOQZeVcDOnkO98YLMb2JxcZExy29N8FKsVlcFoKFnT5hmUndDE3XVDGcjBO4hZP8bitQqsl00FzxYI2Xp');
         let isSubscribed = false;
         let subscriptionEnd = null;
 
@@ -650,10 +650,10 @@
         const successToast = document.getElementById('successToast');
         const soundBathGuide = document.getElementById('soundBathGuide');
 
-        // 🔥 新增：支付按钮事件
+        // 🔥 新增：支付按钮事件 - 已替换你的真实Price ID！
         document.getElementById('monthlyBtn').addEventListener('click', async () => {
             const { error } = await stripe.redirectToCheckout({
-                lineItems: [{ price: 'price_1PxxxMONTHLYxxx', quantity: 1 }],
+                lineItems: [{ price: 'price_1SJTk8R70HXWM8fUQseh4px5', quantity: 1 }],
                 mode: 'subscription',
                 successUrl: `${window.location.href}?success=monthly`,
                 cancelUrl: window.location.href
@@ -662,7 +662,7 @@
 
         document.getElementById('yearlyBtn').addEventListener('click', async () => {
             const { error } = await stripe.redirectToCheckout({
-                lineItems: [{ price: 'price_1PxxxYEARLYxxx', quantity: 1 }],
+                lineItems: [{ price: 'price_1SJTsaR70HXWM8fUBDBEb3Nd', quantity: 1 }],
                 mode: 'subscription',
                 successUrl: `${window.location.href}?success=yearly`,
                 cancelUrl: window.location.href
