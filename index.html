@@ -8,8 +8,8 @@
     <meta name="keywords" content="lucky direction, cosmic compass, astrology">
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com;
-        connect-src 'self' https://lucky-backend-ten.vercel.app https://raw.githubusercontent.com https://api.stripe.com;
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+        connect-src 'self' https://lucky-backend-ten.vercel.app https://raw.githubusercontent.com;
         media-src 'self' blob:;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src https://fonts.gstatic.com;
@@ -20,8 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- 引入烟花动画库 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- 🔥 新增：Stripe支付 -->
-    <script src="https://js.stripe.com/v3/"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -33,36 +31,6 @@
             position: relative;
             overflow-x: hidden;
         }
-        /* 🔥 新增：付费弹窗样式 */
-        #paywallModal {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
-            z-index: 30000; padding: 20px;
-        }
-        .paywall-content {
-            background: white; border-radius: 16px; padding: 30px; max-width: 90%; text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        .paywall-title { color: #4A90E2; font-size: 24px; margin-bottom: 10px; }
-        .paywall-text { color: #666; font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
-        .price-card { 
-            background: linear-gradient(135deg, #FFD700, #FFA500); color: #333; 
-            padding: 20px; border-radius: 12px; margin: 15px 0; font-weight: bold;
-        }
-        .price-month { font-size: 28px; }
-        .price-year { font-size: 24px; text-decoration: line-through; color: #999; }
-        .stripe-button {
-            background: #4A90E2; color: white; border: none; padding: 15px 30px;
-            border-radius: 8px; font-size: 18px; cursor: pointer; margin: 10px; min-height: 50px; width: 100%;
-        }
-        .stripe-button:hover { background: #3A80D2; }
-        .free-teaser { background: #fffbeb; padding: 15px; border-radius: 8px; margin: 20px 0; color: #92400e; }
-        .locked { 
-            opacity: 0.5; background: #f3f9ff; padding: 15px; border-radius: 8px; text-align: center; 
-            border: 2px dashed #4A90E2; margin: 10px 0;
-        }
-        .locked button { background: #FFD700; color: #333; width: 100%; margin-top: 10px; }
-        /* 你的所有原有样式保持不变 */
         /* 烟花容器：全屏覆盖 */
         #confetti-container {
             position: fixed;
@@ -257,7 +225,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
             transition: all 0.3s ease;
-            display: none; /* 🔥 付费后显示 */
+            display: none;
         }
         /* 普通指南针指针容器 - 确保实时响应 */
         .compass-needle-container {
@@ -266,7 +234,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.1s ease-out; /* 快速响应 */
+            transition: transform 0.1s ease-out;
             z-index: 10;
         }
         .needle {
@@ -282,10 +250,6 @@
             margin-top: 5px;
             text-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
-        /* 取消指南针上的按钮 */
-        #actionButton {
-            display: none !important;
-        }
         #camera {
             width: 90vw;
             max-width: 300px;
@@ -297,7 +261,7 @@
             position: relative;
             margin: 20px auto;
             background-color: #000;
-            display: none; /* 🔥 付费后显示 */
+            display: none;
         }
         #video {
             width: 100%;
@@ -324,7 +288,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            transition: transform 0.1s ease-out; /* 快速响应 */
+            transition: transform 0.1s ease-out;
             z-index: 10;
         }
         .camera-needle {
@@ -345,7 +309,7 @@
             color: #1e3a8a;
             margin: 10px;
             text-align: center;
-            display: none; /* 🔥 付费后显示 */
+            display: none;
         }
         #directionTitle {
             font-size: 16px;
@@ -353,7 +317,7 @@
             margin: 5px 0;
             font-weight: 500;
             text-align: center;
-            display: none; /* 🔥 付费后显示 */
+            display: none;
         }
         .mindfulness {
             font-style: italic;
@@ -370,6 +334,7 @@
             border-radius: 6px;
             color: #92400e;
             font-size: 14px;
+            display: none;
         }
         .permission-prompt {
             color: #dc3545;
@@ -528,7 +493,7 @@
             </form>
         </div>
 
-        <div class="card" id="permissionNotice" style="display: none;">
+        <div class="card" id="permissionNotice">
             <p class="permission-prompt font-medium">Allow camera and compass access when prompted.</p>
             <p class="text-sm text-gray-600">For iOS: Enable "Motion & Orientation Access" in Settings → Safari.</p>
             <button id="permissionButton">Enable Permissions</button>
@@ -545,7 +510,6 @@
                 <div class="needle">↑</div>
                 <div class="lucky-text">LUCKY</div>
             </div>
-            <button id="actionButton">Enter Harmony</button>
         </div>
 
         <div id="camera">
@@ -564,59 +528,12 @@
         </div>
     </section>
 
-    <!-- 🔥 新增：付费弹窗 -->
-    <div id="paywallModal">
-        <div class="paywall-content">
-            <h2 class="paywall-title">✨ Unlock Your EXACT Cosmic Degree!</h2>
-            <p class="paywall-text">Our ancient algorithm + <strong>0.98° daily magic</strong> = YOUR personal luck path! Face your exact angle for instant serenity. <strong>Worth every penny!</strong></p>
-            <div class="price-card">
-                <div class="price-month">$2.99 <span style="font-size:16px;">/month</span></div>
-                <div class="price-year"><span>$35.88</span> <strong>$11.99/year (Save 67%!) </strong></div>
-            </div>
-            <button id="monthlyBtn" class="stripe-button">💳 Monthly $2.99</button>
-            <button id="yearlyBtn" class="stripe-button">💎 Yearly $11.99</button>
-            <p style="font-size:12px; color:#999; margin-top:15px;">Cancel anytime • Apple Pay/Google Pay • USA secure</p>
-        </div>
-    </div>
-
     <footer>
         <p>Powered by Ancient Wisdom | For Entertainment Only</p>
         <p>© 2025 Your Lucky Compass</p>
     </footer>
 
     <script>
-        // 🔥 新增：付费变量 - 已替换你的真实Key！
-        const stripe = Stripe('pk_live_51SJSWiR70HXWM8fUQnOQZeVcDOnkO98YLMb2JxcZExy29N8FKsVlcFoKFnT5hmUndDE3XVDGcjBO4hZP8bitQqsl00FzxYI2Xp');
-        let isSubscribed = false;
-        let subscriptionEnd = null;
-
-        // 🔥 新增：检查订阅状态
-        function checkSubscription() {
-            const subData = localStorage.getItem('luckyCompassSub');
-            if (subData) {
-                const { endTime } = JSON.parse(subData);
-                if (Date.now() < endTime) {
-                    isSubscribed = true;
-                    subscriptionEnd = endTime;
-                    return true;
-                } else {
-                    localStorage.removeItem('luckyCompassSub');
-                }
-            }
-            return false;
-        }
-
-        // 🔥 新增：显示付费内容
-        function showPaidContent(angle) {
-            document.getElementById('degree').textContent = `0° / ${angle}°`;
-            document.getElementById('directionTitle').style.display = 'block';
-            document.getElementById('degree').style.display = 'block';
-            document.getElementById('compass').style.display = 'block';
-            document.getElementById('camera').style.display = 'block';
-            document.getElementById('permissionNotice').style.display = 'block';
-            tryGetPermissions();
-        }
-
         let compassEventListener = null;
         let lastAdjustedAngle = 0;
         let currentJoyAngle = 0;
@@ -653,40 +570,10 @@
         const successToast = document.getElementById('successToast');
         const soundBathGuide = document.getElementById('soundBathGuide');
 
-        // 🔥 新增：支付按钮事件 - 已替换你的真实Price ID！
-        document.getElementById('monthlyBtn').addEventListener('click', async () => {
-            const { error } = await stripe.redirectToCheckout({
-                lineItems: [{ price: 'price_1SJTk8R70HXWM8fUQseh4px5', quantity: 1 }],
-                mode: 'subscription',
-                successUrl: `${window.location.href}?success=monthly`,
-                cancelUrl: window.location.href
-            });
-        });
-
-        document.getElementById('yearlyBtn').addEventListener('click', async () => {
-            const { error } = await stripe.redirectToCheckout({
-                lineItems: [{ price: 'price_1SJTsaR70HXWM8fUBDBEb3Nd', quantity: 1 }],
-                mode: 'subscription',
-                successUrl: `${window.location.href}?success=yearly`,
-                cancelUrl: window.location.href
-            });
-        });
-
-        // 🔥 新增：支付成功处理
-        if (window.location.search.includes('success')) {
-            const isYearly = window.location.search.includes('yearly');
-            const months = isYearly ? 12 : 1;
-            const endTime = Date.now() + months * 30 * 24 * 60 * 60 * 1000;
-            localStorage.setItem('luckyCompassSub', JSON.stringify({ endTime }));
-            isSubscribed = true;
-            checkSubscription();
-            document.getElementById('paywallModal').style.display = 'none';
-        }
-
         // 权限引导弹窗逻辑
         agreePermissionBtn.addEventListener(eventType, async () => {
             permissionModal.style.display = 'none';
-            if (currentJoyAngle !== 0 && isSubscribed) {
+            if (currentJoyAngle !== 0) {
                 await tryGetPermissions();
             }
         });
@@ -762,7 +649,18 @@
             results.innerHTML += `<p class="text-sm text-gray-600 p-2 bg-blue-50 rounded-md mt-2">${message}</p>`;
         }
 
-        // 🔥 修改：calculateBazi 函数（只改显示逻辑，运算不变）
+        // 显示完整内容（免费版）
+        function showFullContent(angle) {
+            document.getElementById('degree').textContent = `0° / ${angle}°`;
+            document.getElementById('directionTitle').style.display = 'block';
+            document.getElementById('degree').style.display = 'block';
+            document.getElementById('compass').style.display = 'block';
+            document.getElementById('camera').style.display = 'block';
+            document.getElementById('permissionNotice').style.display = 'block';
+            tryGetPermissions();
+        }
+
+        // calculateBazi 函数
         async function calculateBazi() {
             const button = document.getElementById('calculateBtn');
             const retryButton = document.getElementById('retryFetchBtn');
@@ -820,58 +718,31 @@
                     return;
                 }
 
-                currentJoyAngle = parseFloat(data.angle); // 🔥 保存角度但不显示
+                currentJoyAngle = parseFloat(data.angle);
                 lastAdjustedAngle = currentJoyAngle % 360;
 
-                // 🔥 免费内容（隐藏度数）
+                // 免费版显示完整内容
                 document.getElementById('results').innerHTML = `
                     <div class="card">
-                        <div class="free-teaser">
-                            <p><strong>✨ FREE: Your cosmic foundation unlocked!</strong></p>
-                            <p>Upgrade for <strong>$2.99/month</strong> to reveal your <strong>EXACT Lucky Degree</strong> + real-time alignment!</p>
-                        </div>
                         <p><b>Your Cosmic Calendar:</b> ${data.solar_date}</p>
                         <p><b>Your Cosmic Blueprint:</b> ${data.bazi}</p>
                         <p><b>Your Inner Spark:</b> ${data.personality}</p>
                         <p><b>Your Cosmic Whisper:</b> ${data.mystic_description}</p>
-                        <div class="locked">
-                            <h3>🔒 Your Cosmic Degree: ???°</h3>
-                            <p><em>Our ancient algorithm calculates your <strong>unique daily 0.98° magic</strong></em></p>
-                            <button id="unlockBtn" class="stripe-button">Unlock Now - $2.99/mo</button>
-                        </div>
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; line-height: 1.4;">
-                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">✨ ${data.trust_calculation}</div>
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 14px; line-height: 1.4;">
+                            <div style="font-weight: bold; font-size: 18px; margin-bottom: 8px;">✨ Your Cosmic Degree: ${currentJoyAngle}°</div>
+                            <div>✨ ${data.trust_calculation}</div>
                         </div>
                         <div class="mindfulness bg-gradient-to-r from-teal-100 to-pink-100 p-4 rounded-lg mt-4">
-                            <p><b>Align with the Stars:</b> <span class="locked">Subscribe to rotate your phone to your exact degree!</span></p>
+                            <p><b>Align with the Stars:</b> Rotate your phone to ${currentJoyAngle}° to find your lucky direction!</p>
                             <p><em>Pro tip: Use daily in a quiet moment!</em></p>
                         </div>
                     </div>
                 `;
 
-                // 🔥 解锁按钮事件
-                document.getElementById('unlockBtn').onclick = () => {
-                    document.getElementById('paywallModal').style.display = 'flex';
-                };
-
                 document.getElementById('results').style.display = 'block';
-
-                // 🔥 检查订阅状态
-                if (checkSubscription()) {
-                    // 已付费，显示完整内容
-                    document.getElementById('results').innerHTML += `
-                        <div style="background:#d4edda;padding:15px;border-radius:8px;margin:10px 0;">
-                            <strong>Your Cosmic Degree: ${currentJoyAngle}°</strong>
-                            <p><em>Align with the Stars: Rotate to ${currentJoyAngle}°!</em></p>
-                        </div>
-                    `;
-                    showPaidContent(currentJoyAngle);
-                } else {
-                    // 未付费，显示弹窗
-                    setTimeout(() => {
-                        document.getElementById('paywallModal').style.display = 'flex';
-                    }, 1000);
-                }
+                
+                // 显示完整功能
+                showFullContent(currentJoyAngle);
 
                 if (compassEventListener) {
                     window.removeEventListener("deviceorientation", compassEventListener);
@@ -1064,7 +935,7 @@
                 if (compassEventListener) {
                     window.removeEventListener('deviceorientation', compassEventListener);
                 }
-            } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener && isSubscribed) {
+            } else if (document.visibilityState === 'visible' && currentJoyAngle !== 0 && !compassEventListener) {
                 requestCompassPermission();
             }
         });
